@@ -43,7 +43,7 @@ namespace stdext
 		template <class Range>
 		std::false_type is_double_ended_range(...);
 		template <class Range>
-		std::true_type is_double_ended_range(IS_VALID(.back()), IS_VALID(.pop_back()));
+		std::true_type is_double_ended_range(IS_VALID(.back()), IS_VALID(.shrink_back()));
 		template <class Range>
 		std::false_type is_forward_range(...);
 		template <class Range>
@@ -51,11 +51,16 @@ namespace stdext
 		template <class Range>
 		std::false_type is_single_pass_range(...);
 		template <class Range>
-		std::true_type is_single_pass_range(IS_VALID(.front()), IS_VALID(.pop_front()), IS_VALID(.empty()));
+		std::true_type is_single_pass_range(IS_VALID(.front()), IS_VALID(.shrink_front()), IS_VALID(.empty()));
+
+		template <class Range>
+		std::false_type has_begin_end(...);
+		template <class Range>
+		std::true_type has_begin_end(IS_VALID(.begin()), IS_VALID(.end()));
 #undef IS_VALID
 
 		template <class T>
-		struct same_type { typedef T type; };
+		struct same_type { typedef typename std::remove_reference<typename std::remove_cv<T>::type>::type type; };
 
 		template <class Range>
 		std::conditional<same_type<decltype(is_random_access_range<Range>())>::type::value, random_access_range_tag,
@@ -91,17 +96,21 @@ namespace stdext
 		bool empty() const { return first == last; }
 
 		reference front() const { return *first; }
-		void pop_front() { ++first; }
+		void shrink_front() { ++first; }
 
 		iterator_range save() const { return *this; }
 
 		// Requires bidirectional_iterator_tag
 		reference back() const { return *std::reverse_iterator<iterator>(last); }
-		void pop_back() { --back; }
+		void shrink_back() { --back; }
 
 		// Requires random_access_iterator_tag
 		reference operator[](size_type n) { return first[n]; }
 		size_type length() { return last - first; }
+
+		// RangeProvider via begin/end
+		iterator begin() const { return first; }
+		iterator end() const { return last; }
 
 	private:
 		iterator first, last;
@@ -137,7 +146,7 @@ namespace stdext
 		reference operator*() { return range.front(); }
 		pointer operator->() { return &range.front(); }
 
-		range_iterator& operator++() { range.pop_front(); return *this; }
+		range_iterator& operator++() { range.shrink_front(); return *this; }
 		range_iterator operator++(int) { range_iterator t = *this; ++this; return t; }
 
 	private:
@@ -151,6 +160,9 @@ namespace stdext
 	{
 		return (lhs.range == rhs.range) || (lhs.empty() && rhs.empty());
 	}
+
+	template <class Range>
+	struct is_range : std::conditional<detail::same_type<decltype(detail::is_single_pass_range<Range>())>::type::value, std::true_type, std::false_type>::type { };
 
 	namespace detail
 	{
@@ -174,12 +186,15 @@ namespace stdext
 	}
 
 	template <class Range>
-	range_iterator<Range> begin(Range r)
+	std::enable_if<is_range<Range>::value && !detail::same_type<decltype(detail::has_begin_end<Range>())>::type::value, range_iterator<Range>>
+		begin(Range r)
 	{
 		return range_iterator<Range>(r);
 	}
 
-	template <class Range> range_iterator<Range> end(Range r)
+	template <class Range>
+	std::enable_if<is_range<Range>::value && !detail::same_type<decltype(detail::has_begin_end<Range>())>::type::value, range_iterator<Range>>
+		end(Range r)
 	{
 		return range_iterator<Range>();
 	}
