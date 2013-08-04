@@ -45,9 +45,9 @@ namespace stdext
 		template <class Range>
 		std::true_type is_double_ended_range(IS_VALID(.back()), IS_VALID(.shrink_back()));
 		template <class Range>
-		std::false_type is_forward_range(...);
+		std::false_type is_multi_pass_range(...);
 		template <class Range>
-		std::true_type is_forward_range(IS_VALID(.save()));
+		std::true_type is_multi_pass_range(IS_VALID(.save()));
 		template <class Range>
 		std::false_type is_single_pass_range(...);
 		template <class Range>
@@ -65,18 +65,24 @@ namespace stdext
 		template <class Range>
 		std::conditional<same_type<decltype(is_random_access_range<Range>())>::type::value, random_access_range_tag,
 			std::conditional<same_type<decltype(is_double_ended_range<Range>())>::type::value, double_ended_range_tag,
-				std::conditional<same_type<decltype(is_forward_range<Range>())>::type::value, forward_range_tag,
+				std::conditional<same_type<decltype(is_multi_pass_range<Range>())>::type::value, forward_range_tag,
 					std::enable_if<same_type<decltype(is_single_pass_range<Range>())>::type::value, single_pass_range_tag>
 				>
 			>
 		> range_type();
+
+		template <class T>
+		typename T::size_type embedded_size_type(T&);
+		size_t embedded_size_type(...);
 	}
 	template <class Range>
 	struct range_traits
 	{
 		typedef decltype(detail::range_type<Range>()) range_category;
 		typedef decltype(std::declval<Range>().front()) reference;
+		typedef decltype(std::declval<Range>().begin()) iterator;
 		typedef typename std::remove_cv<typename std::remove_reference<reference>::type>::type value_type;
+		typedef decltype(detail::embedded_size_type(std::declval<Range>())) size_type;
 	};
 
 	template <class Iterator>
