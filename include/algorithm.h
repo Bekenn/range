@@ -19,25 +19,25 @@ namespace stdext
 	template<class SinglePassRange, class Function>
 	Function for_each(SinglePassRange range, Function f);
 	template<class SinglePassRange, class T>
-	decltype(std::declval(SinglePassRange).begin()) find(SinglePassRange range, const T& value);
+	typename range_traits<SinglePassRange>::iterator find(SinglePassRange range, const T& value);
 	template<class SinglePassRange, class Predicate>
-	decltype(std::declval(SinglePassRange).begin()) find_if(SinglePassRange range, Predicate pred);
+	typename range_traits<SinglePassRange>::iterator find_if(SinglePassRange range, Predicate pred);
 	template<class SinglePassRange, class Predicate>
-	decltype(std::declval(SinglePassRange).begin()) find_if_not(SinglePassRange range, Predicate pred);
+	typename range_traits<SinglePassRange>::iterator find_if_not(SinglePassRange range, Predicate pred);
 	template<class MultiPassRange1, class MultiPassRange2>
-	decltype(std::declval(MultiPassRange1).begin()) find_end(MultiPassRange1 range1, MultiPassRange2 range2);
+	typename range_traits<MultiPassRange1>::iterator find_end(MultiPassRange1 range1, MultiPassRange2 range2);
 	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
-	decltype(std::declval(MultiPassRange1).begin()) find_end(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
+	typename range_traits<MultiPassRange1>::iterator find_end(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
 
 	template<class SinglePassRange, class MultiPassRange>
-	decltype(std::declval(SinglePassRange).begin()) find_first_of(SinglePassRange range1, MultiPassRange range2);
+	typename range_traits<SinglePassRange>::iterator find_first_of(SinglePassRange range1, MultiPassRange range2);
 	template<class SinglePassRange, class MultiPassRange, class BinaryPredicate>
-	decltype(std::declval(SinglePassRange).begin()) find_first_of(SinglePassRange range1, MultiPassRange range2, BinaryPredicate pred);
+	typename range_traits<SinglePassRange>::iterator find_first_of(SinglePassRange range1, MultiPassRange range2, BinaryPredicate pred);
 
 	template<class MultiPassRange>
-	decltype(std::declval(MultiPassRange).begin()) adjacent_find(MultiPassRange range);
+	typename range_traits<MultiPassRange>::iterator adjacent_find(MultiPassRange range);
 	template<class MultiPassRange, class BinaryPredicate>
-	decltype(std::declval(MultiPassRange).begin()) adjacent_find(MultiPassRange range, BinaryPredicate pred);
+	typename range_traits<MultiPassRange>::iterator adjacent_find(MultiPassRange range, BinaryPredicate pred);
 
 	template<class SinglePassRange, class T>
 	typename range_traits<SinglePassRange>::size_type count(SinglePassRange range, const T& value);
@@ -60,13 +60,13 @@ namespace stdext
 	bool is_permutation(MultiPassRange1 range1, ForwardIterator2 first2, BinaryPredicate pred);
 
 	template<class MultiPassRange1, class MultiPassRange2>
-	decltype(std::declval(MultiPassRange1).begin()) search(MultiPassRange1 range1, MultiPassRange2 range2);
+	typename range_traits<MultiPassRange1>::iterator search(MultiPassRange1 range1, MultiPassRange2 range2);
 	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
-	decltype(std::declval(MultiPassRange1).begin()) search(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
+	typename range_traits<MultiPassRange1>::iterator search(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
 	template<class MultiPassRange, class Size, class T>
-	decltype(std::declval(MultiPassRange).begin()) search_n(MultiPassRange range, Size count, const T& value);
+	typename range_traits<MultiPassRange>::iterator search_n(MultiPassRange range, Size count, const T& value);
 	template <class MultiPassRange, class Size, class T, class BinaryPredicate>
-	decltype(std::declval(MultiPassRange).begin()) search_n(MultiPassRange range, Size count, const T& value, BinaryPredicate pred);
+	typename range_traits<MultiPassRange>::iterator search_n(MultiPassRange range, Size count, const T& value, BinaryPredicate pred);
 
 	// 25.3, modifying sequence operations:
 	// 25.3.1, copy:
