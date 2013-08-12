@@ -34,5 +34,8 @@
     <None Include="include\algorithm.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="include\range.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

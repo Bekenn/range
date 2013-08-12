@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="include\algorithm.inl" />
+    <None Include="include\range.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3E45411C-7113-40A7-AEDC-744F712FBD17}</ProjectGuid>

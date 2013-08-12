@@ -8,79 +8,109 @@
 
 namespace stdext
 {
-	namespace detail
-	{
-		using ::std::begin;
-		using ::std::end;
-	}
-
-	struct single_pass_range_tag { };
-	struct forward_range_tag : single_pass_range_tag { };
-	struct double_ended_range_tag : forward_range_tag { };
-	struct random_access_range_tag : double_ended_range_tag { };
-
+	// Basic types
 	template <class Range> struct range_traits;
 	template <class Iterator> class iterator_range;
 	template <class Range> class range_iterator;
 
+	// Range categories
+	struct single_pass_range_tag;
+	struct multi_pass_range_tag;
+	struct double_ended_range_tag;
+	struct random_access_range_tag;
+
+	// Range type traits
+	template <class Range> struct is_random_access_range;
+	template <class Range> struct is_double_ended_range;
+	template <class Range> struct is_multi_pass_range;
+	template <class Range> struct is_single_pass_range;
+
+	template <class Range> struct is_range;
+
+	// Range operations
+	template <class Range>
+	typename std::enable_if<is_multi_pass_range<Range>::value, Range>::type
+		save(Range range);
+
+	// Range adapters
 	namespace detail
 	{
-		template <class RangeProvider> auto make_range(RangeProvider& r) -> iterator_range<decltype(begin(r))>;
+		using std::begin;
+
+		template <class RangeProvider>
+		auto make_range(RangeProvider& r) -> iterator_range<decltype(begin(r))>;
 	}
 	template <class RangeProvider> auto make_range(RangeProvider& r) -> decltype(detail::make_range(r));
 	template <class Iterator> iterator_range<Iterator> make_range(Iterator first, Iterator last);
 
-	template <class Range> range_iterator<Range> begin();
-	template <class Range> range_iterator<Range> end();
+	template <class Iterator> void swap(iterator_range<Iterator>& a, iterator_range<Iterator>& b);
+	template <class Range> void swap(range_iterator<Range>& a, range_iterator<Range>& b);
+	template <class Range> bool operator==(const range_iterator<Range>& lhs, const range_iterator<Range>& rhs);
+	template <class Range> bool operator!=(const range_iterator<Range>& lhs, const range_iterator<Range>& rhs);
 
 	namespace detail
 	{
-#define IS_VALID(expr) decltype(std::declval<Range>()expr) = std::declval<decltype(std::declval<Range>()expr)>()
+#define IS_VALID(expr) decltype(std::declval<Range>()expr)* = nullptr
 		template <class Range>
-		std::false_type is_random_access_range(...);
+		std::false_type is_random_access_range_checker(...);
 		template <class Range>
-		std::true_type is_random_access_range(IS_VALID([0]), IS_VALID(.length()));
+		std::true_type is_random_access_range_checker(IS_VALID([0]), IS_VALID(.length()));
 		template <class Range>
-		std::false_type is_double_ended_range(...);
+		std::false_type is_double_ended_range_checker(...);
 		template <class Range>
-		std::true_type is_double_ended_range(IS_VALID(.back()), IS_VALID(.shrink_back()));
+		std::true_type is_double_ended_range_checker(IS_VALID(.back()), IS_VALID(.shrink_back()));
 		template <class Range>
-		std::false_type is_multi_pass_range(...);
+		std::false_type is_multi_pass_range_checker(...);
 		template <class Range>
-		std::true_type is_multi_pass_range(IS_VALID(.save()));
+		std::true_type is_multi_pass_range_checker(IS_VALID(.save()));
 		template <class Range>
-		std::false_type is_single_pass_range(...);
+		std::false_type is_single_pass_range_checker(...);
 		template <class Range>
-		std::true_type is_single_pass_range(IS_VALID(.front()), IS_VALID(.shrink_front()), IS_VALID(.empty()));
-
-		template <class Range>
-		std::false_type has_begin_end(...);
-		template <class Range>
-		std::true_type has_begin_end(IS_VALID(.begin()), IS_VALID(.end()));
+		std::true_type is_single_pass_range_checker(IS_VALID(.front()), IS_VALID(.shrink_front()), IS_VALID(.empty()));
 #undef IS_VALID
-
-		template <class T>
-		struct same_type { typedef typename std::remove_reference<typename std::remove_cv<T>::type>::type type; };
-
-		template <class Range>
-		std::conditional<same_type<decltype(is_random_access_range<Range>())>::type::value, random_access_range_tag,
-			std::conditional<same_type<decltype(is_double_ended_range<Range>())>::type::value, double_ended_range_tag,
-				std::conditional<same_type<decltype(is_multi_pass_range<Range>())>::type::value, forward_range_tag,
-					std::enable_if<same_type<decltype(is_single_pass_range<Range>())>::type::value, single_pass_range_tag>
-				>
-			>
-		> range_type();
 
 		template <class T>
 		typename T::size_type embedded_size_type(T&);
 		size_t embedded_size_type(...);
 	}
+
+	template <class Range>
+	struct is_random_access_range : decltype(detail::is_random_access_range_checker<Range>()) { };
+	template <class Range>
+	struct is_double_ended_range : decltype(detail::is_double_ended_range_checker<Range>()) { };
+	template <class Range>
+	struct is_multi_pass_range : decltype(detail::is_multi_pass_range_checker<Range>()) { };
+	template <class Range>
+	struct is_single_pass_range : decltype(detail::is_single_pass_range_checker<Range>()) { };
+
+	template <class Range>
+	struct is_range : is_single_pass_range<Range>::type { };
+
+	struct single_pass_range_tag { };
+	struct multi_pass_range_tag : single_pass_range_tag { };
+	struct double_ended_range_tag : multi_pass_range_tag { };
+	struct random_access_range_tag : double_ended_range_tag { };
+
 	template <class Range>
 	struct range_traits
 	{
-		typedef decltype(detail::range_type<Range>()) range_category;
+	private:
+		template <class Range>
+		struct range_category_of
+		{
+			typedef
+				typename std::conditional<is_random_access_range<Range>::value, random_access_range_tag,
+					typename std::conditional<is_double_ended_range<Range>::value, double_ended_range_tag,
+						typename std::conditional<is_multi_pass_range<Range>::value, multi_pass_range_tag,
+							typename std::enable_if<is_single_pass_range<Range>::value, single_pass_range_tag>::type
+						>::type
+					>::type
+				>::type type;
+		};
+
+	public:
+		typedef typename range_category_of<Range>::type range_category;
 		typedef decltype(std::declval<Range>().front()) reference;
-		typedef decltype(std::declval<Range>().begin()) iterator;
 		typedef typename std::remove_cv<typename std::remove_reference<reference>::type>::type value_type;
 		typedef decltype(detail::embedded_size_type(std::declval<Range>())) size_type;
 	};
@@ -92,118 +122,66 @@ namespace stdext
 		typedef Iterator iterator;
 		typedef typename std::iterator_traits<iterator>::reference reference;
 		typedef typename std::make_unsigned<typename std::iterator_traits<iterator>::difference_type>::type size_type;
-		//typedef typename std::iterator_traits<iterator>::value_type value_type;
+		typedef typename std::iterator_traits<iterator>::value_type value_type;
 
 	public:
-		iterator_range() : first(), last() { }
-		iterator_range(iterator first, iterator last) : first(first), last(last) { }
+		iterator_range();
+		iterator_range(iterator first, iterator last);
 
 	public:
-		bool empty() const { return first == last; }
+		bool empty() const;
 
-		reference front() const { return *first; }
-		void shrink_front() { ++first; }
-
-		iterator_range save() const { return *this; }
+		reference front() const;
+		void shrink_front();
 
 		// Requires bidirectional_iterator_tag
-		reference back() const { return *std::reverse_iterator<iterator>(last); }
-		void shrink_back() { --back; }
+		reference back() const;
+		void shrink_back();
 
 		// Requires random_access_iterator_tag
-		reference operator[](size_type n) { return first[n]; }
-		size_type length() { return last - first; }
+		reference operator[](size_type n);
+		size_type length();
 
 		// RangeProvider via begin/end
-		iterator begin() const { return first; }
-		iterator end() const { return last; }
+		iterator begin() const;
+		iterator end() const;
+
+		// Swap
+		void swap(iterator_range& other);
 
 	private:
 		iterator first, last;
 	};
 
-	namespace detail
-	{
-		template <class RangeCategory> struct to_iterator_category;
-		template <class IteratorCategory> struct to_range_category;
-#if 0
-		template <> struct to_iterator_category<random_access_range_tag> { typedef std::random_access_iterator_tag type; };
-		template <> struct to_iterator_category<double_ended_range_tag> { typedef std::bidirectional_iterator_tag type; };
-#endif
-		template <> struct to_iterator_category<forward_range_tag> { typedef std::forward_iterator_tag type; };
-		template <> struct to_iterator_category<single_pass_range_tag> { typedef std::input_iterator_tag type; };
-
-		template <> struct to_range_category<std::random_access_iterator_tag> { typedef random_access_range_tag type; };
-		template <> struct to_range_category<std::bidirectional_iterator_tag> { typedef double_ended_range_tag type; };
-		template <> struct to_range_category<std::forward_iterator_tag> { typedef forward_range_tag type; };
-		template <> struct to_range_category<std::input_iterator_tag> { typedef single_pass_range_tag type; };
-		template <> struct to_range_category<std::output_iterator_tag> { typedef single_pass_range_tag type; };
-	}
-
 	template <class Range>
-	class range_iterator : std::iterator<typename detail::to_iterator_category<typename range_traits<Range>::range_category>::type,
-		typename range_traits<Range>::value_type> //, difference_type, pointer, reference>
+	class range_iterator : std::iterator<std::input_iterator_tag,
+		typename range_traits<Range>::value_type,
+		typename std::make_signed<typename range_traits<Range>::size_type>::type,
+		const typename range_traits<Range>::value_type*,
+		const typename range_traits<Range>::value_type&
+	>
 	{
 	public:
-		range_iterator() { }
-		range_iterator(Range r) : range(r) { }
+		range_iterator();
+		range_iterator(Range& r);
 
 	public:
-		reference operator*() { return range.front(); }
-		pointer operator->() { return &range.front(); }
+		reference operator*() const;
+		pointer operator->() const;
 
-		range_iterator& operator++() { range.shrink_front(); return *this; }
-		range_iterator operator++(int) { range_iterator t = *this; ++this; return t; }
+		range_iterator& operator++();
+		range_iterator operator++(int);
+
+		void swap(range_iterator& other);
 
 	private:
 		template <class Range>
-		friend bool operator==(range_iterator<Range> lhs, range_iterator<Range> rhs);
-		Range range;
+		friend bool operator==(const range_iterator<Range>& lhs, const range_iterator<Range>& rhs);
+		Range* range;
+		value_type value;
 	};
-
-	template <class Range>
-	bool operator==(range_iterator<Range> lhs, range_iterator<Range> rhs)
-	{
-		return (lhs.range == rhs.range) || (lhs.empty() && rhs.empty());
-	}
-
-	template <class Range>
-	struct is_range : std::conditional<detail::same_type<decltype(detail::is_single_pass_range<Range>())>::type::value, std::true_type, std::false_type>::type { };
-
-	namespace detail
-	{
-		template <class RangeProvider>
-		auto make_range(RangeProvider& r) -> iterator_range<decltype(begin(r))>
-		{
-			return iterator_range<decltype(begin(r))>(begin(r), end(r));
-		}
-	}
-
-	template <class RangeProvider>
-	auto make_range(RangeProvider& r) -> decltype(detail::make_range(r))
-	{
-		return detail::make_range(r);
-	}
-
-	template <class Iterator>
-	iterator_range<Iterator> make_range(Iterator first, Iterator last)
-	{
-		return iterator_range<Iterator>(first, last);
-	}
-
-	template <class Range>
-	std::enable_if<is_range<Range>::value && !detail::same_type<decltype(detail::has_begin_end<Range>())>::type::value, range_iterator<Range>>
-		begin(Range r)
-	{
-		return range_iterator<Range>(r);
-	}
-
-	template <class Range>
-	std::enable_if<is_range<Range>::value && !detail::same_type<decltype(detail::has_begin_end<Range>())>::type::value, range_iterator<Range>>
-		end(Range r)
-	{
-		return range_iterator<Range>();
-	}
 }
+
+#include "range.inl"
 
 #endif

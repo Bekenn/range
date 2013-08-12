@@ -167,7 +167,7 @@ namespace stdext
 	{
 		while (!range.empty())
 		{
-			if (pred(range.front())
+			if (pred(range.front()))
 				return range.begin();
 			range.shrink_front;
 		}
@@ -221,8 +221,64 @@ namespace stdext
 		return is_permutation(range1, first2, std::equal_to<>());
 	}
 
+#if 0
+	template <class ForwardIterator1, class ForwardIterator2, class BinaryPredicate>
+	bool is_permutation(ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterator2 first2, BinaryPredicate pred)
+	{
+		while (first1 != last1)
+		{
+			if (!pred(*first1, *first2))
+				break;
+			++first1;
+			++first2;
+		}
+
+		if (first1 != last1)
+		{
+			ForwardIterator2 last2 = std::advance(first2, std::distance(first1, last1));
+			for (ForwardIterator1 i = first1; i != last1; ++i)
+			{
+				auto pred1 = [&](typename std::iterator_traits<ForwardIterator1>::reference a) { return pred(a, *i); };
+				ForwardIterator1 prev = std::find_if(first1, i, pred1);
+				if (prev == i)
+				{
+					auto n = 1 + std::count_if(std::advance(i, 1), last1, pred1);
+					auto pred2 = [&](typename std::iterator_traits<ForwardIterator2>::reference a) { return pred(a, *i); };
+					if (n == 1)
+					{
+						if (std::find_if(first2, last2, pred2) == last2)
+							return false;
+					}
+					else if (n != std::count_if(first2, last2, pred2))
+						return false;
+				}
+			}
+		}
+
+		return true;
+	}
+#endif
+
 	template<class MultiPassRange1, class ForwardIterator2, class BinaryPredicate>
 	bool is_permutation(MultiPassRange1 range1, ForwardIterator2 first2, BinaryPredicate pred)
 	{
+		while (!range1.empty())
+		{
+			if (range1.front() != *first2)
+				break;
+			range1.shrink_front();
+			++first2;
+		}
+
+		if (!range1.empty())
+		{
+			MultiPassRange1 r1 = range1.save();
+			while (!r1.empty())
+			{
+				r1.shrink_front();
+			}
+		}
+
+		return true;
 	}
 }
