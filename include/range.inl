@@ -89,6 +89,18 @@ namespace stdext
 		a.swap(b);
 	}
 
+	namespace detail
+	{
+		using std::begin;
+		using std::end;
+
+		template <class RangeProvider>
+		inline auto make_range(RangeProvider& r)->iterator_range<decltype(begin(r))>
+		{
+			return iterator_range<decltype(begin(r))>(begin(r), end(r));
+		}
+	}
+
 	template <class RangeProvider>
 	inline auto make_range(RangeProvider& r) -> decltype(detail::make_range(r))
 	{
