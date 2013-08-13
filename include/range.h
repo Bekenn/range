@@ -72,19 +72,16 @@ namespace stdext
 		template <class T>
 		typename T::size_type embedded_size_type(T&);
 		size_t embedded_size_type(...);
+
+		template <class Range>
+		struct is_natural_random_access_range : decltype(detail::is_random_access_range_checker<Range>()) { };
+		template <class Range>
+		struct is_natural_double_ended_range : decltype(detail::is_double_ended_range_checker<Range>()) { };
+		template <class Range>
+		struct is_natural_multi_pass_range : decltype(detail::is_multi_pass_range_checker<Range>()) { };
+		template <class Range>
+		struct is_natural_single_pass_range : decltype(detail::is_single_pass_range_checker<Range>()) { };
 	}
-
-	template <class Range>
-	struct is_random_access_range : decltype(detail::is_random_access_range_checker<Range>()) { };
-	template <class Range>
-	struct is_double_ended_range : decltype(detail::is_double_ended_range_checker<Range>()) { };
-	template <class Range>
-	struct is_multi_pass_range : decltype(detail::is_multi_pass_range_checker<Range>()) { };
-	template <class Range>
-	struct is_single_pass_range : decltype(detail::is_single_pass_range_checker<Range>()) { };
-
-	template <class Range>
-	struct is_range : is_single_pass_range<Range>::type { };
 
 	struct single_pass_range_tag { };
 	struct multi_pass_range_tag : single_pass_range_tag { };
@@ -99,10 +96,10 @@ namespace stdext
 		struct range_category_of
 		{
 			typedef
-				typename std::conditional<is_random_access_range<Range>::value, random_access_range_tag,
-					typename std::conditional<is_double_ended_range<Range>::value, double_ended_range_tag,
-						typename std::conditional<is_multi_pass_range<Range>::value, multi_pass_range_tag,
-							typename std::enable_if<is_single_pass_range<Range>::value, single_pass_range_tag>::type
+				typename std::conditional<detail::is_natural_random_access_range<Range>::value, random_access_range_tag,
+					typename std::conditional<detail::is_natural_double_ended_range<Range>::value, double_ended_range_tag,
+						typename std::conditional<detail::is_natural_multi_pass_range<Range>::value, multi_pass_range_tag,
+							typename std::enable_if<detail::is_natural_single_pass_range<Range>::value, single_pass_range_tag>::type
 						>::type
 					>::type
 				>::type type;
@@ -115,6 +112,18 @@ namespace stdext
 		typedef decltype(detail::embedded_size_type(std::declval<Range>())) size_type;
 	};
 
+	template <class Range>
+	struct is_random_access_range : std::is_base_of<random_access_range_tag, typename range_traits<Range>::range_category> { };
+	template <class Range>
+	struct is_double_ended_range : std::is_base_of<double_ended_range_tag, typename range_traits<Range>::range_category> { };
+	template <class Range>
+	struct is_multi_pass_range : std::is_base_of<multi_pass_range_tag, typename range_traits<Range>::range_category> { };
+	template <class Range>
+	struct is_single_pass_range : std::is_base_of<single_pass_range_tag, typename range_traits<Range>::range_category> { };
+	template <class Range>
+	struct is_range : is_single_pass_range<Range> { };
+
+	// This may break automatic range category detection, if declared members are present even when not defined via SFINAE.
 	template <class Iterator>
 	class iterator_range
 	{

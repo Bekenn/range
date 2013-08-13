@@ -18,55 +18,67 @@ namespace stdext
 
 	template<class SinglePassRange, class Function>
 	Function for_each(SinglePassRange range, Function f);
-	template<class SinglePassRange, class T>
-	typename range_traits<SinglePassRange>::iterator find(SinglePassRange range, const T& value);
-	template<class SinglePassRange, class Predicate>
-	typename range_traits<SinglePassRange>::iterator find_if(SinglePassRange range, Predicate pred);
-	template<class SinglePassRange, class Predicate>
-	typename range_traits<SinglePassRange>::iterator find_if_not(SinglePassRange range, Predicate pred);
-	template<class MultiPassRange1, class MultiPassRange2>
-	typename range_traits<MultiPassRange1>::iterator find_end(MultiPassRange1 range1, MultiPassRange2 range2);
-	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
-	typename range_traits<MultiPassRange1>::iterator find_end(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
+	template<class InputIterator, class T>
+	InputIterator find(iterator_range<InputIterator> range, const T& value);
+	template<class InputIterator, class Predicate>
+	InputIterator find_if(iterator_range<InputIterator> range, Predicate pred);
+	template<class InputIterator, class Predicate>
+	InputIterator find_if_not(iterator_range<InputIterator> range, Predicate pred);
+	template<class ForwardIterator, class MultiPassRange>
+	ForwardIterator find_end(iterator_range<ForwardIterator> range1, MultiPassRange range2);
+	template<class ForwardIterator, class MultiPassRange, class BinaryPredicate>
+	ForwardIterator find_end(iterator_range<ForwardIterator> range1, MultiPassRange range2, BinaryPredicate pred);
 
-	template<class SinglePassRange, class MultiPassRange>
-	typename range_traits<SinglePassRange>::iterator find_first_of(SinglePassRange range1, MultiPassRange range2);
-	template<class SinglePassRange, class MultiPassRange, class BinaryPredicate>
-	typename range_traits<SinglePassRange>::iterator find_first_of(SinglePassRange range1, MultiPassRange range2, BinaryPredicate pred);
+	template<class InputIterator, class MultiPassRange>
+	InputIterator find_first_of(iterator_range<InputIterator> range1, MultiPassRange range2);
+	template<class InputIterator, class MultiPassRange, class BinaryPredicate>
+	InputIterator find_first_of(iterator_range<InputIterator> range1, MultiPassRange range2, BinaryPredicate pred);
 
-	template<class MultiPassRange>
-	typename range_traits<MultiPassRange>::iterator adjacent_find(MultiPassRange range);
-	template<class MultiPassRange, class BinaryPredicate>
-	typename range_traits<MultiPassRange>::iterator adjacent_find(MultiPassRange range, BinaryPredicate pred);
+	template<class ForwardIterator>
+	ForwardIterator adjacent_find(iterator_range<ForwardIterator> range);
+	template<class ForwardIterator, class BinaryPredicate>
+	ForwardIterator adjacent_find(iterator_range<ForwardIterator> range, BinaryPredicate pred);
 
 	template<class SinglePassRange, class T>
 	typename range_traits<SinglePassRange>::size_type count(SinglePassRange range, const T& value);
 	template<class SinglePassRange, class Predicate>
 	typename range_traits<SinglePassRange>::size_type count_if(SinglePassRange range, Predicate pred);
 
-	template<class SinglePassRange1, class InputIterator2>
-	std::pair<typename range_traits<SinglePassRange1>::iterator, InputIterator2> mismatch(SinglePassRange1 range1, InputIterator2 first2);
-	template <class SinglePassRange1, class InputIterator2, class BinaryPredicate>
-	std::pair<typename range_traits<SinglePassRange1>::iterator, InputIterator2> mismatch(SinglePassRange1 range1, InputIterator2 first2, BinaryPredicate pred);
+	template<class InputIterator1, class InputIterator2>
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, InputIterator2 first2);
+	template <class InputIterator1, class InputIterator2, class BinaryPredicate>
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, InputIterator2 first2, BinaryPredicate pred);
+	template<class InputIterator1, class InputIterator2>
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> range2);
+	template<class InputIterator1, class InputIterator2, class BinaryPredicate>
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> first2, BinaryPredicate pred);
 
 	template<class SinglePassRange1, class InputIterator2>
 	bool equal(SinglePassRange1 range1, InputIterator2 first2);
 	template <class SinglePassRange1, class InputIterator2, class BinaryPredicate>
 	bool equal(SinglePassRange1 range1, InputIterator2 first2, BinaryPredicate pred);
+	template<class SinglePassRange1, class SinglePassRange2>
+	bool equal(SinglePassRange1 range1, SinglePassRange2 range2);
+	template<class SinglePassRange1, class SinglePassRange2, class BinaryPredicate>
+	bool equal(SinglePassRange1 range1, SinglePassRange2 range2, BinaryPredicate pred);
 
 	template<class MultiPassRange1, class ForwardIterator2>
 	bool is_permutation(MultiPassRange1 range1, ForwardIterator2 first2);
 	template<class MultiPassRange1, class ForwardIterator2, class BinaryPredicate>
 	bool is_permutation(MultiPassRange1 range1, ForwardIterator2 first2, BinaryPredicate pred);
-
 	template<class MultiPassRange1, class MultiPassRange2>
-	typename range_traits<MultiPassRange1>::iterator search(MultiPassRange1 range1, MultiPassRange2 range2);
+	bool is_permutation(MultiPassRange1 range1, MultiPassRange2 range2);
 	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
-	typename range_traits<MultiPassRange1>::iterator search(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
-	template<class MultiPassRange, class Size, class T>
-	typename range_traits<MultiPassRange>::iterator search_n(MultiPassRange range, Size count, const T& value);
-	template <class MultiPassRange, class Size, class T, class BinaryPredicate>
-	typename range_traits<MultiPassRange>::iterator search_n(MultiPassRange range, Size count, const T& value, BinaryPredicate pred);
+	bool is_permutation(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
+
+	template<class ForwardIterator, class MultiPassRange>
+	ForwardIterator search(iterator_range<ForwardIterator> range1, MultiPassRange range2);
+	template<class ForwardIterator, class MultiPassRange, class BinaryPredicate>
+	ForwardIterator search(iterator_range<ForwardIterator> range1, MultiPassRange range2, BinaryPredicate pred);
+	template<class ForwardIterator, class Size, class T>
+	ForwardIterator search_n(iterator_range<ForwardIterator> range, Size count, const T& value);
+	template <class ForwardIterator, class Size, class T, class BinaryPredicate>
+	ForwardIterator search_n(iterator_range<ForwardIterator> range, Size count, const T& value, BinaryPredicate pred);
 
 	// 25.3, modifying sequence operations:
 	// 25.3.1, copy:

@@ -195,6 +195,16 @@ namespace stdext
 		return make_pair(range1.end(), first2);
 	}
 
+	template<class InputIterator1, class InputIterator2>
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> range2)
+	{
+	}
+
+	template<class InputIterator1, class InputIterator2, class BinaryPredicate>
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> first2, BinaryPredicate pred)
+	{
+	}
+
 	template<class SinglePassRange1, class InputIterator2>
 	bool equal(SinglePassRange1 range1, InputIterator2 first2)
 	{
@@ -213,6 +223,16 @@ namespace stdext
 		}
 
 		return true;
+	}
+
+	template<class SinglePassRange1, class SinglePassRange2>
+	bool equal(SinglePassRange1 range1, SinglePassRange2 range2)
+	{
+	}
+
+	template<class SinglePassRange1, class SinglePassRange2, class BinaryPredicate>
+	bool equal(SinglePassRange1 range1, SinglePassRange2 range2, BinaryPredicate pred)
+	{
 	}
 
 	template<class MultiPassRange1, class ForwardIterator2>
@@ -280,5 +300,15 @@ namespace stdext
 		}
 
 		return true;
+	}
+
+	template<class MultiPassRange1, class MultiPassRange2>
+	bool is_permutation(MultiPassRange1 range1, MultiPassRange2 range2)
+	{
+	}
+
+	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
+	bool is_permutation(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred)
+	{
 	}
 }
