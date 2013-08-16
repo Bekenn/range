@@ -45,14 +45,14 @@ namespace stdext
 		}
 	}
 
-	template<class SinglePassRange, class T>
-	typename range_traits<SinglePassRange>::iterator find(SinglePassRange range, const T& value)
+	template<class InputIterator, class T>
+	InputIterator find(iterator_range<InputIterator> range, const T& value)
 	{
-		return find_if(range, [&](range_traits<SinglePassRange>::reference a) {return a == value; });
+		return find_if(range, [&](typename std::iterator_traits<InputIterator>::reference a) {return a == value; });
 	}
 
-	template<class SinglePassRange, class Predicate>
-	typename range_traits<SinglePassRange>::iterator find_if(SinglePassRange range, Predicate pred)
+	template<class InputIterator, class Predicate>
+	InputIterator find_if(iterator_range<InputIterator> range, Predicate pred)
 	{
 		while (!range.empty())
 		{
@@ -64,27 +64,27 @@ namespace stdext
 		return range.end();
 	}
 
-	template<class SinglePassRange, class Predicate>
-	typename range_traits<SinglePassRange>::iterator find_if_not(SinglePassRange range, Predicate pred)
+	template<class InputIterator, class Predicate>
+	InputIterator find_if_not(iterator_range<InputIterator> range, Predicate pred)
 	{
 		return find_if(range, std::not1(pred));
 	}
 
-	template<class MultiPassRange1, class MultiPassRange2>
-	typename range_traits<MultiPassRange1>::iterator find_end(MultiPassRange1 range1, MultiPassRange2 range2)
+	template<class ForwardIterator, class MultiPassRange>
+	ForwardIterator find_end(iterator_range<ForwardIterator> range1, MultiPassRange range2)
 	{
 		return find_end(range1, range2, std::equal_to<>());
 	}
 
-	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
-	typename range_traits<MultiPassRange1>::iterator find_end(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred)
+	template<class ForwardIterator, class MultiPassRange, class BinaryPredicate>
+	ForwardIterator find_end(iterator_range<ForwardIterator> range1, MultiPassRange range2, BinaryPredicate pred)
 	{
 		auto p = range1.end();
 
 		while (true)
 		{
-			MultiPassRange1 r1 = range1.save();
-			MultiPassRange2 r2 = range2.save();
+			auto r1 = save(range1);
+			auto r2 = save(range2);
 			while (!r2.empty() && !r1.empty())
 			{
 				if (!pred(r1.front(), r2.front()))
@@ -106,18 +106,18 @@ namespace stdext
 		return p;
 	}
 
-	template<class SinglePassRange, class MultiPassRange>
-	typename range_traits<SinglePassRange>::iterator find_first_of(SinglePassRange range1, MultiPassRange range2)
+	template<class InputIterator, class MultiPassRange>
+	InputIterator find_first_of(iterator_range<InputIterator> range1, MultiPassRange range2)
 	{
 		return find_first_of(range1, range2, std::equal_to<>());
 	}
 
-	template<class SinglePassRange, class MultiPassRange, class BinaryPredicate>
-	typename range_traits<SinglePassRange>::iterator find_first_of(SinglePassRange range1, MultiPassRange range2, BinaryPredicate pred)
+	template<class InputIterator, class MultiPassRange, class BinaryPredicate>
+	InputIterator find_first_of(iterator_range<InputIterator> range1, MultiPassRange range2, BinaryPredicate pred)
 	{
 		while (!range1.empty())
 		{
-			auto r2 = range2.save();
+			auto r2 = save(range2);
 			while (!r2.empty())
 			{
 				if (pred(range1.front(), r2.front()))
@@ -131,19 +131,19 @@ namespace stdext
 		return range1.end();
 	}
 
-	template<class MultiPassRange>
-	typename range_traits<MultiPassRange>::iterator adjacent_find(MultiPassRange range)
+	template<class ForwardIterator>
+	ForwardIterator adjacent_find(iterator_range<ForwardIterator> range)
 	{
 		return adjacent_find(range, std::equal_to<>());
 	}
 
-	template<class MultiPassRange, class BinaryPredicate>
-	typename range_traits<MultiPassRange>::iterator adjacent_find(MultiPassRange range, BinaryPredicate pred)
+	template<class ForwardIterator, class BinaryPredicate>
+	ForwardIterator adjacent_find(iterator_range<ForwardIterator> range, BinaryPredicate pred)
 	{
 		if (range.empty())
 			return range.end();
 
-		auto r = range.save();
+		auto r = save(range);
 		r.shrink_front();
 		while (!r.empty())
 		{
@@ -175,14 +175,14 @@ namespace stdext
 		return range.end();
 	}
 
-	template<class SinglePassRange1, class InputIterator2>
-	std::pair<typename range_traits<SinglePassRange1>::iterator, InputIterator2> mismatch(SinglePassRange1 range1, InputIterator2 first2)
+	template<class InputIterator1, class InputIterator2>
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, InputIterator2 first2)
 	{
 		return mismatch(range1, first2, std::equal_to<>());
 	}
 
-	template <class SinglePassRange1, class InputIterator2, class BinaryPredicate>
-	std::pair<typename range_traits<SinglePassRange1>::iterator, InputIterator2> mismatch(SinglePassRange1 range1, InputIterator2 first2, BinaryPredicate pred)
+	template <class InputIterator1, class InputIterator2, class BinaryPredicate>
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, InputIterator2 first2, BinaryPredicate pred)
 	{
 		while (!range1.empty())
 		{
@@ -198,11 +198,21 @@ namespace stdext
 	template<class InputIterator1, class InputIterator2>
 	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> range2)
 	{
+		return mismatch(range1, range2, std::equal_to<>());
 	}
 
 	template<class InputIterator1, class InputIterator2, class BinaryPredicate>
-	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> first2, BinaryPredicate pred)
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> range2, BinaryPredicate pred)
 	{
+		while (!range1.empty() && !range2.empty())
+		{
+			if (!pred(range1.front(), range2.front()))
+				return std::make_pair(range1.begin(), range2.begin());
+			range1.shrink_front();
+			range2.shrink_front();
+		}
+
+		return std::make_pair(range1.begin(), range2.begin());
 	}
 
 	template<class SinglePassRange1, class InputIterator2>
@@ -218,8 +228,8 @@ namespace stdext
 		{
 			if (!pred(range1.front(), *first2))
 				return false;
-			++first2;
 			range1.shrink_front();
+			++first2;
 		}
 
 		return true;
@@ -228,11 +238,21 @@ namespace stdext
 	template<class SinglePassRange1, class SinglePassRange2>
 	bool equal(SinglePassRange1 range1, SinglePassRange2 range2)
 	{
+		return equal(range1, range2, std::equal_to<>());
 	}
 
 	template<class SinglePassRange1, class SinglePassRange2, class BinaryPredicate>
 	bool equal(SinglePassRange1 range1, SinglePassRange2 range2, BinaryPredicate pred)
 	{
+		while (!range1.empty() && !range2.empty())
+		{
+			if (!pred(range1.front(), range2.front()))
+				return false;
+			range1.shrink_front();
+			range2.shrink_front();
+		}
+
+		return true;
 	}
 
 	template<class MultiPassRange1, class ForwardIterator2>
@@ -284,27 +304,27 @@ namespace stdext
 	{
 		while (!range1.empty())
 		{
-			if (range1.front() != *first2)
-				break;
+			if (!pred(range1.front(), *first2))
+				return false;
 			range1.shrink_front();
 			++first2;
 		}
 
 		if (!range1.empty())
 		{
-			MultiPassRange1 r1 = range1.save();
-			while (!r1.empty())
+			typename range_traits<MultiPassRange1>::size_type n = 0;
+			auto basis = save(range1);
+			while (!range1.empty())
 			{
-				r1.shrink_front();
+				count_if()
 			}
 		}
-
-		return true;
 	}
 
 	template<class MultiPassRange1, class MultiPassRange2>
 	bool is_permutation(MultiPassRange1 range1, MultiPassRange2 range2)
 	{
+		return is_permutation(range1, range2, std::equal_to<>());
 	}
 
 	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>

@@ -51,7 +51,7 @@ namespace stdext
 	template<class InputIterator1, class InputIterator2>
 	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> range2);
 	template<class InputIterator1, class InputIterator2, class BinaryPredicate>
-	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> first2, BinaryPredicate pred);
+	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> range2, BinaryPredicate pred);
 
 	template<class SinglePassRange1, class InputIterator2>
 	bool equal(SinglePassRange1 range1, InputIterator2 first2);
