@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <functional>
+#include <iterator>
 
 namespace stdext
 {
@@ -216,13 +218,15 @@ namespace stdext
 	}
 
 	template<class SinglePassRange1, class InputIterator2>
-	bool equal(SinglePassRange1 range1, InputIterator2 first2)
+	typename std::enable_if<!is_range<InputIterator2>::value, bool>::type
+		equal(SinglePassRange1 range1, InputIterator2 first2)
 	{
 		return equal(range1, first2, std::equal_to<>());
 	}
 
 	template <class SinglePassRange1, class InputIterator2, class BinaryPredicate>
-	bool equal(SinglePassRange1 range1, InputIterator2 first2, BinaryPredicate pred)
+	typename std::enable_if<!is_range<InputIterator2>::value, bool>::type
+		equal(SinglePassRange1 range1, InputIterator2 first2, BinaryPredicate pred)
 	{
 		while (!range1.empty())
 		{
@@ -236,13 +240,15 @@ namespace stdext
 	}
 
 	template<class SinglePassRange1, class SinglePassRange2>
-	bool equal(SinglePassRange1 range1, SinglePassRange2 range2)
+	typename std::enable_if<is_range<SinglePassRange2>::value, bool>::type
+		equal(SinglePassRange1 range1, SinglePassRange2 range2)
 	{
 		return equal(range1, range2, std::equal_to<>());
 	}
 
 	template<class SinglePassRange1, class SinglePassRange2, class BinaryPredicate>
-	bool equal(SinglePassRange1 range1, SinglePassRange2 range2, BinaryPredicate pred)
+	typename std::enable_if<is_range<SinglePassRange2>::value, bool>::type
+		equal(SinglePassRange1 range1, SinglePassRange2 range2, BinaryPredicate pred)
 	{
 		while (!range1.empty() && !range2.empty())
 		{
@@ -256,79 +262,73 @@ namespace stdext
 	}
 
 	template<class MultiPassRange1, class ForwardIterator2>
-	bool is_permutation(MultiPassRange1 range1, ForwardIterator2 first2)
+	typename std::enable_if<!is_range<ForwardIterator2>::value, bool>::type
+		is_permutation(MultiPassRange1 range1, ForwardIterator2 first2)
 	{
 		return is_permutation(range1, first2, std::equal_to<>());
 	}
 
-#if 0
-	template <class ForwardIterator1, class ForwardIterator2, class BinaryPredicate>
-	bool is_permutation(ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterator2 first2, BinaryPredicate pred)
-	{
-		while (first1 != last1)
-		{
-			if (!pred(*first1, *first2))
-				break;
-			++first1;
-			++first2;
-		}
-
-		if (first1 != last1)
-		{
-			ForwardIterator2 last2 = std::advance(first2, std::distance(first1, last1));
-			for (ForwardIterator1 i = first1; i != last1; ++i)
-			{
-				auto pred1 = [&](typename std::iterator_traits<ForwardIterator1>::reference a) { return pred(a, *i); };
-				ForwardIterator1 prev = std::find_if(first1, i, pred1);
-				if (prev == i)
-				{
-					auto n = 1 + std::count_if(std::advance(i, 1), last1, pred1);
-					auto pred2 = [&](typename std::iterator_traits<ForwardIterator2>::reference a) { return pred(a, *i); };
-					if (n == 1)
-					{
-						if (std::find_if(first2, last2, pred2) == last2)
-							return false;
-					}
-					else if (n != std::count_if(first2, last2, pred2))
-						return false;
-				}
-			}
-		}
-
-		return true;
-	}
-#endif
-
 	template<class MultiPassRange1, class ForwardIterator2, class BinaryPredicate>
-	bool is_permutation(MultiPassRange1 range1, ForwardIterator2 first2, BinaryPredicate pred)
+	typename std::enable_if<!is_range<ForwardIterator2>::value, bool>::type
+		is_permutation(MultiPassRange1 range1, ForwardIterator2 first2, BinaryPredicate pred)
 	{
-		while (!range1.empty())
+		for (; !range1.empty(); range1.drop_first(), ++first2)
 		{
 			if (!pred(range1.front(), *first2))
-				return false;
-			range1.shrink_front();
-			++first2;
+				break;
 		}
 
-		if (!range1.empty())
-		{
-			typename range_traits<MultiPassRange1>::size_type n = 0;
-			auto basis = save(range1);
-			while (!range1.empty())
-			{
-				count_if()
-			}
-		}
+		if (range1.empty())
+			return true;
+
+		ForwardIterator2 last2 = std::advance(first2, length(range1));
+		return is_permutation(range1, make_range(first2, last2), pred);
 	}
 
 	template<class MultiPassRange1, class MultiPassRange2>
-	bool is_permutation(MultiPassRange1 range1, MultiPassRange2 range2)
+	typename std::enable_if<is_range<MultiPassRange2>::value, bool>::type
+		is_permutation(MultiPassRange1 range1, MultiPassRange2 range2)
 	{
 		return is_permutation(range1, range2, std::equal_to<>());
 	}
 
 	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
-	bool is_permutation(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred)
+	typename std::enable_if<is_range<MultiPassRange2>::value, bool>::type
+		is_permutation(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred)
 	{
+		for (; !range1.empty() && !range2.empty(); range1.drop_first(), range2.drop_first())
+		{
+			if (!pred(range1.front(), range2.front()))
+				break;
+		}
+
+		if (range1.empty() && range2.empty())
+			return true;
+
+		typename std::common_type<typename range_traits<MultiPassRange1>::size_type,
+			typename range_traits<MultiPassRange2>::size_type>::type n = 0;
+		auto pred1 = [&](typename range_traits<MultiPassRange1>::reference a) { return pred(a, range1.front()); };
+		auto pred2 = [&](typename range_traits<MultiPassRange2>::reference a) { return pred(a, range1.front()); };
+		auto basis = save(range1);
+		for (; !range1.empty(); range1.drop_first(), ++n)
+		{
+			auto head = make_subrange(basis, 0, n);
+			if (any_of(head, pred1))
+				continue;
+
+			auto r1 = range1;
+			r1.drop_first();
+			auto count = 1 + count_if(std::move(r1), pred1);
+			if (count == 1)
+			{
+				if (!any_of(range2, pred2))
+					return false;
+			}
+			else
+			{
+				if (count_if(range2, pred2) != count)
+					return false;
+			}
+		}
 	}
 }

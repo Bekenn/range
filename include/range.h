@@ -31,6 +31,10 @@ namespace stdext
 
 	template <class Range> struct is_range;
 
+	// Range properties
+	template <class MultiPassRange>
+	typename range_traits<MultiPassRange>::size_type length(MultiPassRange range);
+
 	// Range operations
 	template <class Range>
 	typename std::enable_if<is_multi_pass_range<Range>::value, Range>::type
@@ -46,6 +50,8 @@ namespace stdext
 	}
 	template <class RangeProvider> auto make_range(RangeProvider& r) -> decltype(detail::make_range(r));
 	template <class Iterator> iterator_range<Iterator> make_range(Iterator first, Iterator last);
+	template <class MultiPassRange>
+	subrange<MultiPassRange> make_subrange(MultiPassRange range, typename range_traits<MultiPassRange>::size_type first, typename range_traits<MultiPassRange>::size_type last);
 
 	template <class Iterator> void swap(iterator_range<Iterator>& a, iterator_range<Iterator>& b);
 	template <class Range> void swap(range_iterator<Range>& a, range_iterator<Range>& b);

@@ -54,22 +54,30 @@ namespace stdext
 	std::pair<InputIterator1, InputIterator2> mismatch(iterator_range<InputIterator1> range1, iterator_range<InputIterator2> range2, BinaryPredicate pred);
 
 	template<class SinglePassRange1, class InputIterator2>
-	bool equal(SinglePassRange1 range1, InputIterator2 first2);
+	typename std::enable_if<!is_range<InputIterator2>::value, bool>::type
+		equal(SinglePassRange1 range1, InputIterator2 first2);
 	template <class SinglePassRange1, class InputIterator2, class BinaryPredicate>
-	bool equal(SinglePassRange1 range1, InputIterator2 first2, BinaryPredicate pred);
+	typename std::enable_if<!is_range<InputIterator2>::value, bool>::type
+		equal(SinglePassRange1 range1, InputIterator2 first2, BinaryPredicate pred);
 	template<class SinglePassRange1, class SinglePassRange2>
-	bool equal(SinglePassRange1 range1, SinglePassRange2 range2);
+	typename std::enable_if<is_range<SinglePassRange2>::value, bool>::type
+		equal(SinglePassRange1 range1, SinglePassRange2 range2);
 	template<class SinglePassRange1, class SinglePassRange2, class BinaryPredicate>
-	bool equal(SinglePassRange1 range1, SinglePassRange2 range2, BinaryPredicate pred);
+	typename std::enable_if<is_range<SinglePassRange2>::value, bool>::type
+		equal(SinglePassRange1 range1, SinglePassRange2 range2, BinaryPredicate pred);
 
 	template<class MultiPassRange1, class ForwardIterator2>
-	bool is_permutation(MultiPassRange1 range1, ForwardIterator2 first2);
+	typename std::enable_if<!is_range<ForwardIterator2>::value, bool>::type
+		is_permutation(MultiPassRange1 range1, ForwardIterator2 first2);
 	template<class MultiPassRange1, class ForwardIterator2, class BinaryPredicate>
-	bool is_permutation(MultiPassRange1 range1, ForwardIterator2 first2, BinaryPredicate pred);
+	typename std::enable_if<!is_range<ForwardIterator2>::value, bool>::type
+		is_permutation(MultiPassRange1 range1, ForwardIterator2 first2, BinaryPredicate pred);
 	template<class MultiPassRange1, class MultiPassRange2>
-	bool is_permutation(MultiPassRange1 range1, MultiPassRange2 range2);
+	typename std::enable_if<is_range<MultiPassRange2>::value, bool>::type
+		is_permutation(MultiPassRange1 range1, MultiPassRange2 range2);
 	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
-	bool is_permutation(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
+	typename std::enable_if<is_range<MultiPassRange2>::value, bool>::type
+		is_permutation(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
 
 	template<class ForwardIterator, class MultiPassRange>
 	ForwardIterator search(iterator_range<ForwardIterator> range1, MultiPassRange range2);

@@ -90,6 +90,31 @@ namespace stdext
 		a.swap(b);
 	}
 
+	namespace detail
+	{
+		template <class MultiPassRange>
+		typename range_traits<MultiPassRange>::size_type length(MultiPassRange range, multi_pass_range_tag)
+		{
+			typename range_traits<MultiPassRange>::size_type n = 0;
+			for (; !range.empty(); range.drop_first())
+				++n;
+
+			return n;
+		}
+
+		template <class RandomAccessRange>
+		typename range_traits<RandomAccessRange>::size_type length(RandomAccessRange range, random_access_range_tag)
+		{
+			return range.length();
+		}
+	}
+
+	template <class MultiPassRange>
+	typename range_traits<MultiPassRange>::size_type length(MultiPassRange range)
+	{
+		return detail::length(range, typename range_traits<MultiPassRange>::range_category());
+	}
+
 	template <class Range>
 	inline typename std::enable_if<is_multi_pass_range<Range>::value, Range>::type
 		save(Range range)
@@ -119,6 +144,12 @@ namespace stdext
 	inline iterator_range<Iterator> make_range(Iterator first, Iterator last)
 	{
 		return iterator_range<Iterator>(std::move(first), std::move(last));
+	}
+
+	template <class MultiPassRange>
+	subrange<MultiPassRange> make_subrange(MultiPassRange range, typename range_traits<MultiPassRange>::size_type first, typename range_traits<MultiPassRange>::size_type last)
+	{
+		return subrange<MultiPassRange>(std::move(range), std::move(first), std::move(last));
 	}
 
 	template <class Range>
