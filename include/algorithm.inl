@@ -331,4 +331,62 @@ namespace stdext
 			}
 		}
 	}
+
+	template<class ForwardIterator, class MultiPassRange>
+	ForwardIterator search(iterator_range<ForwardIterator> range1, MultiPassRange range2)
+	{
+		return search(std::move(range1), std::move(range2), std::equal_to<>());
+	}
+
+	template<class ForwardIterator, class MultiPassRange, class BinaryPredicate>
+	ForwardIterator search(iterator_range<ForwardIterator> range1, MultiPassRange range2, BinaryPredicate pred)
+	{
+		for (; !range1.empty(); range1.drop_first())
+		{
+			auto r1 = save(range1);
+			auto r2 = save(range2);
+			for (; !r1.empty() && !r2.empty(); r1.drop_first(), r2.drop_first())
+			{
+				if (!pred(r1.front(), r2.front()))
+					break;
+			}
+
+			if (r2.empty())
+				return range1.begin();
+
+			if (r1.empty())
+				return range1.end();
+		}
+
+		return range1.end();
+	}
+
+	template<class ForwardIterator, class Size, class T>
+	ForwardIterator search_n(iterator_range<ForwardIterator> range, Size count, const T& value)
+	{
+		return search_n(std::move(range), std::move(count), value, std::equal_to<>());
+	}
+
+	template <class ForwardIterator, class Size, class T, class BinaryPredicate>
+	ForwardIterator search_n(iterator_range<ForwardIterator> range, Size count, const T& value, BinaryPredicate pred)
+	{
+		for (; !range.empty(); range.drop_first())
+		{
+			auto r = save(range);
+			auto n = count;
+			for (; !r.empty() && n > 0; r.drop_first(), --n)
+			{
+				if (!pred(r.front(), value))
+					break;
+			}
+
+			if (n == 0)
+				return r.begin();
+
+			if (r.empty())
+				return r.end();
+		}
+
+		return range.end();
+	}
 }
