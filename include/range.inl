@@ -1,6 +1,33 @@
 namespace stdext
 {
 	template <class Range, class Iterator, class RangeCategory>
+	bool detail::iterator_range_base<Range, Iterator, RangeCategory, output_range_tag>::empty() const
+	{
+		const Range& range = *static_cast<const Range*>(this);
+		return first == last;
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	Range& detail::iterator_range_base<Range, Iterator, RangeCategory, output_range_tag>::front()
+	{
+		return static_cast<Range&>(*this);
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	void detail::iterator_range_base<Range, Iterator, RangeCategory, output_range_tag>::drop_first(size_type n)
+	{
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	Range& detail::iterator_range_base<Range, Iterator, RangeCategory, output_range_tag>::operator =
+		(typename std::iterator_traits<Iterator>::value_type const& value)
+	{
+		Range& range = static_cast<Range&>(*this);
+		*range.first = value;
+		return range;
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
 	bool detail::iterator_range_base<Range, Iterator, RangeCategory, single_pass_range_tag>::empty() const
 	{
 		const Range& range = *static_cast<const Range*>(this);
@@ -20,6 +47,43 @@ namespace stdext
 	{
 		Range& range = *static_cast<Range*>(this);
 		std::advance(range.first, n);
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	typename detail::iterator_range_base<Range, Iterator, RangeCategory, multi_pass_range_tag>::reference
+		detail::iterator_range_base<Range, Iterator, RangeCategory, multi_pass_range_tag>::at_pos(position_type pos) const
+	{
+		return *pos;
+	}
+	
+	template <class Range, class Iterator, class RangeCategory>
+	typename detail::iterator_range_base<Range, Iterator, RangeCategory, multi_pass_range_tag>::position_type
+		detail::iterator_range_base<Range, Iterator, RangeCategory, multi_pass_range_tag>::begin_pos() const
+	{
+		const Range& range = *static_cast<const Range*>(this);
+		return range.first;
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	typename detail::iterator_range_base<Range, Iterator, RangeCategory, multi_pass_range_tag>::position_type
+		detail::iterator_range_base<Range, Iterator, RangeCategory, multi_pass_range_tag>::end_pos() const
+	{
+		const Range& range = *static_cast<const Range*>(this);
+		return range.last;
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	void detail::iterator_range_base<Range, Iterator, RangeCategory, multi_pass_range_tag>::drop_before(position_type pos)
+	{
+		Range& range = *static_cast<Range*>(this);
+		range.first = pos;
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	void detail::iterator_range_base<Range, Iterator, RangeCategory, multi_pass_range_tag>::drop_after(position_type pos)
+	{
+		Range& range = *static_cast<Range*>(this);
+		range.last = pos;
 	}
 
 	template <class Range, class Iterator, class RangeCategory>
@@ -44,6 +108,31 @@ namespace stdext
 	{
 		const Range& range = *static_cast<const Range*>(this);
 		return range.first[n];
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	typename detail::iterator_range_base<Range, Iterator, RangeCategory, random_access_range_tag>::reference
+		detail::iterator_range_base<Range, Iterator, RangeCategory, random_access_range_tag>::at(size_type n) const
+	{
+		// TODO: Range-check n
+		const Range& range = *static_cast<const Range*>(this);
+		return range.first[n];
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	typename detail::iterator_range_base<Range, Iterator, RangeCategory, random_access_range_tag>::position_type
+		detail::iterator_range_base<Range, Iterator, RangeCategory, random_access_range_tag>::position_at(size_type n) const
+	{
+		const Range& range = *static_cast<const Range*>(this);
+		return range.first + n;
+	}
+
+	template <class Range, class Iterator, class RangeCategory>
+	typename detail::iterator_range_base<Range, Iterator, RangeCategory, random_access_range_tag>::size_type
+		detail::iterator_range_base<Range, Iterator, RangeCategory, random_access_range_tag>::index_at(position_type pos) const
+	{
+		const Range& range = *static_cast<const Range*>(this);
+		return size_type(pos - range.first);
 	}
 
 	template <class Range, class Iterator, class RangeCategory>
@@ -93,7 +182,7 @@ namespace stdext
 	namespace detail
 	{
 		template <class MultiPassRange>
-		typename range_traits<MultiPassRange>::size_type length(MultiPassRange range, multi_pass_range_tag)
+		typename range_traits<MultiPassRange>::size_type range_length(MultiPassRange range, multi_pass_range_tag)
 		{
 			typename range_traits<MultiPassRange>::size_type n = 0;
 			for (; !range.empty(); range.drop_first())
@@ -103,22 +192,29 @@ namespace stdext
 		}
 
 		template <class RandomAccessRange>
-		typename range_traits<RandomAccessRange>::size_type length(RandomAccessRange range, random_access_range_tag)
+		typename range_traits<RandomAccessRange>::size_type range_length(RandomAccessRange range, random_access_range_tag)
 		{
 			return range.length();
 		}
 	}
 
 	template <class MultiPassRange>
-	typename range_traits<MultiPassRange>::size_type length(MultiPassRange range)
+	typename range_traits<MultiPassRange>::size_type range_length(MultiPassRange range)
 	{
-		return detail::length(range, typename range_traits<MultiPassRange>::range_category());
+		return detail::range_length(range, typename range_traits<MultiPassRange>::range_category());
 	}
 
-	template <class Range>
-	inline typename std::enable_if<is_multi_pass_range<Range>::value, Range>::type
-		save(Range range)
+	template <class MultiPassRange>
+	inline MultiPassRange range_before(MultiPassRange range, typename MultiPassRange::position_type pos)
 	{
+		range.drop_after(pos);
+		return range;
+	}
+
+	template <class MultiPassRange>
+	inline MultiPassRange range_after(MultiPassRange range, typename MultiPassRange::position_type pos)
+	{
+		range.drop_before(pos);
 		return range;
 	}
 
@@ -146,56 +242,117 @@ namespace stdext
 		return iterator_range<Iterator>(std::move(first), std::move(last));
 	}
 
-	template <class MultiPassRange>
-	subrange<MultiPassRange> make_subrange(MultiPassRange range, typename range_traits<MultiPassRange>::size_type first, typename range_traits<MultiPassRange>::size_type last)
+	template <class Range>
+	inline range_iterator<Range> range_begin(Range range)
 	{
-		return subrange<MultiPassRange>(std::move(range), std::move(first), std::move(last));
+		return range_iterator<Range>(std::move(range));
 	}
 
 	template <class Range>
-	inline range_iterator<Range>::range_iterator() : range(nullptr)
+	inline range_iterator<Range> range_end(Range range)
+	{
+		return range_iterator<Range>();
+	}
+
+	template <class DoubleEndedRange>
+	inline reverse_range<DoubleEndedRange> make_reverse_range(DoubleEndedRange range)
+	{
+		return reverse_range<DoubleEndedRange>(range);
+	}
+
+	template <class Iterator, class Range>
+	Iterator& detail::range_iterator_base<Iterator, Range, output_range_tag>::operator*()
+	{
+		return static_cast<Iterator&>(*this);
+	}
+
+	template <class Iterator, class Range>
+	Iterator& detail::range_iterator_base<Iterator, Range, output_range_tag>::operator++()
+	{
+		return static_cast<Iterator&>(*this);
+	}
+
+	template <class Iterator, class Range>
+	Iterator& detail::range_iterator_base<Iterator, Range, output_range_tag>::operator++(int)
+	{
+		return static_cast<Iterator&>(*this);
+	}
+
+	template <class Iterator, class Range>
+	Iterator& detail::range_iterator_base<Iterator, Range, output_range_tag>::operator=(typename range_traits<Range>::value_type const& value)
+	{
+		Iterator& i = static_cast<Iterator&>(*this);
+		i.range.front() = value;
+		i.range.drop_first();
+		return i;
+	}
+
+	template <class Iterator, class Range>
+	void detail::range_iterator_base<Iterator, Range, output_range_tag>::swap(range_iterator_base& other)
 	{
 	}
 
-	template <class Range>
-	inline range_iterator<Range>::range_iterator(Range& r) : range(&r)
-	{
-		++*this;
-	}
-
-	template <class Range>
-	inline typename range_iterator<Range>::reference range_iterator<Range>::operator*() const
+	template <class Iterator, class Range>
+	inline typename detail::range_iterator_base<Iterator, Range, single_pass_range_tag>::reference
+		detail::range_iterator_base<Iterator, Range, single_pass_range_tag>::operator*() const
 	{
 		return value;
 	}
 
-	template <class Range>
-	inline typename range_iterator<Range>::pointer range_iterator<Range>::operator->() const
+	template <class Iterator, class Range>
+	inline typename detail::range_iterator_base<Iterator, Range, single_pass_range_tag>::pointer
+		detail::range_iterator_base<Iterator, Range, single_pass_range_tag>::operator->() const
 	{
 		return &value;
 	}
 
-	template <class Range>
-	inline range_iterator<Range>& range_iterator<Range>::operator++()
+	template <class Iterator, class Range>
+	inline Iterator& detail::range_iterator_base<Iterator, Range, single_pass_range_tag>::operator++()
 	{
-		range->shrink_front();
-		return *this;
+		Iterator& i = static_cast<Iterator&>(*this);
+		i.range.drop_first();
+		return i;
+	}
+
+	template <class Iterator, class Range>
+	inline Iterator detail::range_iterator_base<Iterator, Range, single_pass_range_tag>::operator++(int)
+	{
+		Iterator& i = static_cast<Iterator&>(*this);
+		Iterator tmp = i;
+		++*this;
+		return tmp;
+	}
+
+	template <class Iterator, class Range>
+	inline void detail::range_iterator_base<Iterator, Range, single_pass_range_tag>::swap(range_iterator_base& other)
+	{
+		using std::swap;
+		swap(value, other.value);
 	}
 
 	template <class Range>
-	inline range_iterator<Range> range_iterator<Range>::operator++(int)
+	inline range_iterator<Range>::range_iterator() : range()
 	{
-		range_iterator tmp = *this;
+	}
+
+	template <class Range>
+	inline range_iterator<Range>::range_iterator(Range r) : range(std::move(r))
+	{
 		++*this;
-		return tmp;
+	}
+
+	template <class Range>
+	inline range_iterator<Range>::range_iterator(Range r, typename range_traits<Range>::position_type pos) : range(std::move(range))
+	{
+		range.drop_before(pos);
 	}
 
 	template <class Range>
 	inline void range_iterator<Range>::swap(range_iterator& other)
 	{
 		using std::swap;
+		detail::range_iterator_base<range_iterator, Range>::swap(other);
 		swap(range, other.range);
-		swap(value, other.value);
 	}
 
 	template <class Range>
@@ -215,80 +372,136 @@ namespace stdext
 		return !(lhs == rhs);
 	}
 
-	template <class Subrange, class Range>
-	bool detail::subrange_base<Subrange, Range, single_pass_range_tag>::empty() const
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline bool detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::empty() const
 	{
-		const Subrange& subrange = *static_cast<const Subrange*>(this);
-		return subrange.length == 0;
+		const DoubleEndedRange& r = *static_cast<const DoubleEndedRange*>(this);
+		return r.range.empty();
 	}
 
-	template <class Subrange, class Range>
-	typename detail::subrange_base<Subrange, Range, single_pass_range_tag>::reference
-		detail::subrange_base<Subrange, Range, single_pass_range_tag>::front() const
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline typename detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::reference
+		detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::front() const
 	{
-		const Subrange& subrange = *static_cast<const Subrange*>(this);
-		return subrange.range.front();
+		const DoubleEndedRange& r = *static_cast<const DoubleEndedRange*>(this);
+		return r.range.back();
 	}
 
-	template <class Subrange, class Range>
-	void detail::subrange_base<Subrange, Range, single_pass_range_tag>::drop_first(size_type n)
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline typename detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::reference
+		detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::back() const
 	{
-		Subrange& subrange = *static_cast<Subrange*>(this);
-		subrange.drop_first(n);
-		length -= n;
+		const DoubleEndedRange& r = *static_cast<const DoubleEndedRange*>(this);
+		return r.range.front();
 	}
 
-	template <class Subrange, class Range>
-	typename detail::subrange_base<Subrange, Range, random_access_range_tag>::reference
-		detail::subrange_base<Subrange, Range, random_access_range_tag>::back() const
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline void detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::drop_first(size_type n)
 	{
-		const Subrange& subrange = *static_cast<const Subrange*>(this);
-		return subrange.range.back();
+		DoubleEndedRange& r = *static_cast<DoubleEndedRange*>(this);
+		r.range.drop_last(n);
 	}
 
-	template <class Subrange, class Range>
-	void detail::subrange_base<Subrange, Range, random_access_range_tag>::drop_last(size_type n = 1)
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline void detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::drop_last(size_type n)
 	{
-		Subrange& subrange = *static_cast<Subrange*>(this);
-		subrange.length -= n;
+		DoubleEndedRange& r = *static_cast<DoubleEndedRange*>(this);
+		r.range.drop_first(n);
 	}
 
-	template <class Subrange, class Range>
-	typename detail::subrange_base<Subrange, Range, random_access_range_tag>::reference
-		detail::subrange_base<Subrange, Range, random_access_range_tag>::operator[](size_type n) const
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline typename detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::reference
+		detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::at_pos(position_type pos) const
 	{
-		const Subrange& subrange = *static_cast<Subrange*>(this);
-		return subrange[n];
+		const DoubleEndedRange& r = *static_cast<const DoubleEndedRange*>(this);
+		return range_before(r.range, pos).back();
 	}
 
-	template <class Subrange, class Range>
-	typename detail::subrange_base<Subrange, Range, random_access_range_tag>::size_type
-		detail::subrange_base<Subrange, Range, random_access_range_tag>::length() const
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline typename detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::position_type
+		detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::begin_pos() const
 	{
-		const Subrange& subrange = *static_cast<Subrange*>(this);
-		return subrange.length;
+		const DoubleEndedRange& r = *static_cast<const DoubleEndedRange*>(this);
+		return r.range.end_pos();
 	}
 
-	namespace detail
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	typename detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::position_type
+		detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::end_pos() const
 	{
-		template <class Range>
-		void subrange_trim(Range& r, typename Range::size_type first, typename Range::size_type /* last */, single_pass_range_tag)
-		{
-			r.drop_first(first);
-		}
-
-		template <class Range>
-		void subrange_trim(Range& r, typename Range::size_type first, typename Range::size_type last, random_access_range_tag)
-		{
-			r.drop_first(first);
-			r.drop_last(r.length() - last - first);
-		}
+		const DoubleEndedRange& r = *static_cast<const DoubleEndedRange*>(this);
+		return r.range.begin_pos();
 	}
 
-	template <class MultiPassRange>
-	subrange<MultiPassRange>::subrange(MultiPassRange r, typename range_traits<MultiPassRange>::size_type first, typename range_traits<MultiPassRange>::size_type last) :
-		range(r), length(last - first)
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	void detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::drop_before(position_type pos)
 	{
-		detail::subrange_trim(range, first, last, typename range_traits<MultiPassRange>::range_category());
+		DoubleEndedRange& r = *static_cast<DoubleEndedRange*>(this);
+		r.range.drop_after(pos);
+	}
+
+	template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline void detail::reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>::drop_after(position_type pos)
+	{
+		DoubleEndedRange& r = *static_cast<DoubleEndedRange*>(this);
+		r.range.drop_before(pos);
+	}
+
+	template <class RandomAccessRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline typename detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::reference
+		detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::operator[](size_type n) const
+	{
+		const RandomAccessRange& r = *static_cast<const RandomAccessRange*>(this);
+		return r.range[r.range.length() - n - 1];
+	}
+
+	template <class RandomAccessRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline typename detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::reference
+		detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::at(size_type n) const
+	{
+		const RandomAccessRange& r = *static_cast<const RandomAccessRange*>(this);
+		return r.range[r.range.length() - n - 1];
+	}
+
+	template <class RandomAccessRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline typename detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::position_type
+		detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::position_at(size_type n) const
+	{
+		const RandomAccessRange& r = *static_cast<const RandomAccessRange*>(this);
+		return r.range.position_at(r.range.length() - n);
+	}
+
+	template <class RandomAccessRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	typename detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::size_type
+		detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::index_at(position_type pos) const
+	{
+		const RandomAccessRange& r = *static_cast<const RandomAccessRange*>(this);
+		return r.range.length() - r.range.index_at(pos);
+	}
+
+	template <class RandomAccessRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
+	inline typename detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::size_type
+		detail::reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag>::length() const
+	{
+		const RandomAccessRange& r = *static_cast<const RandomAccessRange*>(this);
+		return r.range.length();
+	}
+
+	template <class DoubleEndedRange>
+	inline reverse_range<DoubleEndedRange>::reverse_range(DoubleEndedRange range) : range(range)
+	{
+	}
+
+	template <class DoubleEndedRange>
+	inline void reverse_range<DoubleEndedRange>::swap(reverse_range& other)
+	{
+		using std::swap;
+		swap(range, other.range);
+	}
+
+	template <class Range>
+	inline void swap(reverse_range<Range>& a, reverse_range<Range>& b)
+	{
+		a.swap(b);
 	}
 }

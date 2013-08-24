@@ -8,21 +8,18 @@ using namespace std;
 
 int main()
 {
+#if 0
 	ifstream stream("hello.txt");
 	istream_iterator<char> streamit(stream);
-	//string message = "Hello, world!";
-	auto r = make_range(streamit, istream_iterator<char>());
-#if 0
-	while (!r.empty())
-	{
+#endif
+	string message = "Hello, world!";
+	auto r = make_range(message);
+#if 1
+	for (; !r.empty(); r.drop_first())
 		cout << r.front();
-		r.shrink_front();
-	}
 #else
-	for (auto i = r.begin(), last = r.end(); i != last; ++i)
-	{
+	for (auto i = r.begin_pos(), last = r.end_pos(); i != last; ++i)
 		cout << *i;
-	}
 #endif
 
 	cout << endl;
