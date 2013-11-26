@@ -19,25 +19,25 @@ namespace stdext
 	template<class SinglePassRange, class Function>
 	Function for_each(SinglePassRange range, Function f);
 	template<class SinglePassRange, class T>
-	SinglePassRange find(SinglePassRange range, const T& value);
+	typename range_traits<SinglePassRange>::position_type find(SinglePassRange range, const T& value);
 	template<class SinglePassRange, class Predicate>
-	SinglePassRange find_if(SinglePassRange range, Predicate pred);
+	typename range_traits<SinglePassRange>::position_type find_if(SinglePassRange range, Predicate pred);
 	template<class SinglePassRange, class Predicate>
-	SinglePassRange find_if_not(SinglePassRange range, Predicate pred);
+	typename range_traits<SinglePassRange>::position_type find_if_not(SinglePassRange range, Predicate pred);
 	template<class MultiPassRange1, class MultiPassRange2>
-	MultiPassRange1 find_end(MultiPassRange1 range1, MultiPassRange2 range2);
+	typename range_traits<MultiPassRange1>::position_type find_end(MultiPassRange1 range1, MultiPassRange2 range2);
 	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
-	MultiPassRange1 find_end(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
+	typename range_traits<MultiPassRange1>::position_type find_end(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
 
 	template<class SinglePassRange, class MultiPassRange>
-	SinglePassRange find_first_of(SinglePassRange range1, MultiPassRange range2);
+	typename range_traits<SinglePassRange>::position_type find_first_of(SinglePassRange range1, MultiPassRange range2);
 	template<class SinglePassRange, class MultiPassRange, class BinaryPredicate>
-	SinglePassRange find_first_of(SinglePassRange range1, MultiPassRange range2, BinaryPredicate pred);
+	typename range_traits<SinglePassRange>::position_type find_first_of(SinglePassRange range1, MultiPassRange range2, BinaryPredicate pred);
 
 	template<class MultiPassRange>
-	MultiPassRange adjacent_find(MultiPassRange range);
+	typename range_traits<MultiPassRange>::position_type adjacent_find(MultiPassRange range);
 	template<class MultiPassRange, class BinaryPredicate>
-	MultiPassRange adjacent_find(MultiPassRange range, BinaryPredicate pred);
+	typename range_traits<MultiPassRange>::position_type adjacent_find(MultiPassRange range, BinaryPredicate pred);
 
 	template<class SinglePassRange, class T>
 	typename range_traits<SinglePassRange>::size_type count(SinglePassRange range, const T& value);
@@ -45,16 +45,16 @@ namespace stdext
 	typename range_traits<SinglePassRange>::size_type count_if(SinglePassRange range, Predicate pred);
 
 	template<class SinglePassRange, class InputIterator>
-	typename std::enable_if<!is_range<InputIterator>::value, std::pair<SinglePassRange, InputIterator>>::type
+	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<SinglePassRange>::position_type, InputIterator>>::type
 		mismatch(SinglePassRange range1, InputIterator first2);
 	template <class SinglePassRange, class InputIterator, class BinaryPredicate>
-	typename std::enable_if<!is_range<InputIterator>::value, std::pair<SinglePassRange, InputIterator>>::type
+	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<SinglePassRange>::position_type, InputIterator>>::type
 		mismatch(SinglePassRange range1, InputIterator first2, BinaryPredicate pred);
 	template<class SinglePassRange1, class SinglePassRange2>
-	typename std::enable_if<is_range<SinglePassRange2>::value, std::pair<SinglePassRange1, SinglePassRange2>>::type
+	typename std::enable_if<is_range<SinglePassRange2>::value, std::pair<typename range_traits<SinglePassRange1>::position_type, typename range_traits<SinglePassRange2>::position_type>>::type
 		mismatch(SinglePassRange1 range1, SinglePassRange2 range2);
 	template<class SinglePassRange1, class SinglePassRange2, class BinaryPredicate>
-	typename std::enable_if<is_range<SinglePassRange2>::value, std::pair<SinglePassRange1, SinglePassRange2>>::type
+	typename std::enable_if<is_range<SinglePassRange2>::value, std::pair<typename range_traits<SinglePassRange1>::position_type, typename range_traits<SinglePassRange2>::position_type>>::type
 		mismatch(SinglePassRange1 range1, SinglePassRange2 range2, BinaryPredicate pred);
 
 	template<class SinglePassRange1, class InputIterator2>
@@ -84,13 +84,13 @@ namespace stdext
 		is_permutation(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
 
 	template<class MultiPassRange1, class MultiPassRange2>
-	MultiPassRange1 search(MultiPassRange1 range1, MultiPassRange2 range2);
+	typename range_traits<MultiPassRange1>::position_type search(MultiPassRange1 range1, MultiPassRange2 range2);
 	template<class MultiPassRange1, class MultiPassRange2, class BinaryPredicate>
-	MultiPassRange1 search(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
+	typename range_traits<MultiPassRange1>::position_type search(MultiPassRange1 range1, MultiPassRange2 range2, BinaryPredicate pred);
 	template<class MultiPassRange, class Size, class T>
-	MultiPassRange search_n(MultiPassRange range, Size count, const T& value);
+	typename range_traits<MultiPassRange>::position_type search_n(MultiPassRange range, Size count, const T& value);
 	template <class MultiPassRange, class Size, class T, class BinaryPredicate>
-	MultiPassRange search_n(MultiPassRange range, Size count, const T& value, BinaryPredicate pred);
+	typename range_traits<MultiPassRange>::position_type search_n(MultiPassRange range, Size count, const T& value, BinaryPredicate pred);
 
 	// 25.3, modifying sequence operations:
 	// 25.3.1, copy:
@@ -130,26 +130,26 @@ namespace stdext
 	template<class MultiPassRange, class T>
 	void fill(MultiPassRange range, const T& value);
 	template<class OutputRange, class Size, class T>
-	OutputRange fill_n(OutputRange first, Size n, const T& value);
+	typename range_traits<OutputRange>::position_type fill_n(OutputRange first, Size n, const T& value);
 
 	template<class MultiPassRange, class Generator>
 	void generate(MultiPassRange range, Generator gen);
 	template<class OutputRange, class Size, class Generator>
-	OutputRange generate_n(OutputRange range, Size n, Generator gen);
+	typename range_traits<OutputRange>::position_type generate_n(OutputRange range, Size n, Generator gen);
 
 	template<class MultiPassRange, class T>
-	MultiPassRange remove(MultiPassRange range, const T& value);
+	typename range_traits<MultiPassRange>::position_type remove(MultiPassRange range, const T& value);
 	template<class MultiPassRange, class Predicate>
-	MultiPassRange remove_if(MultiPassRange range, Predicate pred);
+	typename range_traits<MultiPassRange>::position_type remove_if(MultiPassRange range, Predicate pred);
 	template<class SinglePassRange, class OutputIterator, class T>
 	OutputIterator remove_copy(SinglePassRange range, OutputIterator result, const T& value);
 	template<class SinglePassRange, class OutputIterator, class Predicate>
 	OutputIterator remove_copy_if(SinglePassRange range, OutputIterator result, Predicate pred);
 
 	template<class MultiPassRange>
-	MultiPassRange unique(MultiPassRange range);
+	typename range_traits<MultiPassRange>::position_type unique(MultiPassRange range);
 	template<class MultiPassRange, class BinaryPredicate>
-	MultiPassRange unique(MultiPassRange range, BinaryPredicate pred);
+	typename range_traits<MultiPassRange>::position_type unique(MultiPassRange range, BinaryPredicate pred);
 	template<class SinglePassRange, class OutputIterator>
 	OutputIterator unique_copy(SinglePassRange range, OutputIterator result);
 	template<class SinglePassRange, class OutputIterator, class BinaryPredicate>

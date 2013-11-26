@@ -10,7 +10,9 @@ namespace stdext
 {
 	// Basic types
 	template <class Range> struct range_traits;
-	template <class RangeCategory, class T, class Position, class SizeType = std::size_t, class Reference = T&> struct range;
+	template <class RangeCategory, class T, class Position, class SizeType = std::size_t,
+		class DifferenceType = std::ptrdiff_t, class Reference = T&>
+	struct range;
 	template <class Iterator> class iterator_range;
 	template <class Range> class range_iterator;
 
@@ -78,16 +80,18 @@ namespace stdext
 		typedef typename Range::value_type value_type;
 		typedef typename Range::position_type position_type;
 		typedef typename Range::size_type size_type;
+		typedef typename Range::difference_type difference_type;
 		typedef typename Range::reference reference;
 	};
 
-	template <class RangeCategory, class T, class Position, class Size, class Reference>
+	template <class RangeCategory, class T, class Position, class Size, class Difference, class Reference>
 	struct range
 	{
 		typedef RangeCategory range_category;
 		typedef T value_type;
 		typedef Position position_type;
 		typedef Size size_type;
+		typedef Difference difference_type;
 		typedef Reference reference;
 	};
 
@@ -141,12 +145,18 @@ namespace stdext
 
 		template <class Range, class Iterator, class RangeCategory>
 		class iterator_range_base<Range, Iterator, RangeCategory, output_range_tag> :
-			public range<RangeCategory, void, Iterator, std::size_t, void>
+			public range<RangeCategory, Range, Iterator, std::size_t, std::ptrdiff_t, void>
 		{
 		public:
 			bool empty() const;
 			Range& front();
-			void drop_first(size_type n = 1);
+			void drop_first();
+
+			position_type begin_pos() const;
+			void begin_pos(position_type pos);
+			position_type end_pos() const;
+			void end_pos(position_type pos);
+			Range& at_pos(position_type pos);
 
 			Range& operator = (typename std::iterator_traits<Iterator>::value_type const& value);
 		};
@@ -157,12 +167,19 @@ namespace stdext
 			typename std::iterator_traits<Iterator>::value_type,
 			Iterator,
 			typename std::make_unsigned<typename std::iterator_traits<Iterator>::difference_type>::type,
+			typename std::iterator_traits<Iterator>::difference_type,
 			typename std::iterator_traits<Iterator>::reference>
 		{
 		public:
 			bool empty() const;
 			reference front() const;
-			void drop_first(size_type n = 1);
+			void drop_first();
+
+			reference at_pos(position_type pos) const;
+			position_type begin_pos() const;
+			void begin_pos(position_type pos);
+			position_type end_pos() const;
+			void end_pos(position_type pos);
 		};
 
 		template <class Range, class Iterator, class RangeCategory>
@@ -170,11 +187,8 @@ namespace stdext
 			public iterator_range_base<Range, Iterator, RangeCategory, single_pass_range_tag>
 		{
 		public:
-			reference at_pos(position_type pos) const;
-			position_type begin_pos() const;
-			position_type end_pos() const;
-			void drop_before(position_type pos);
-			void drop_after(position_type pos);
+			void advance_pos(position_type& p, difference_type n) const;
+			difference_type distance(position_type first, position_type last) const;
 		};
 
 		template <class Range, class Iterator, class RangeCategory>
@@ -183,7 +197,7 @@ namespace stdext
 		{
 		public:
 			reference back() const;
-			void drop_last(size_type n = 1);
+			void drop_last();
 		};
 
 		template <class Range, class Iterator, class RangeCategory>
@@ -196,6 +210,11 @@ namespace stdext
 			position_type position_at(size_type n) const;
 			size_type index_at(position_type pos) const;
 			size_type length() const;
+
+			using iterator_range_base<Range, Iterator, RangeCategory, double_ended_range_tag>::drop_first;
+			using iterator_range_base<Range, Iterator, RangeCategory, double_ended_range_tag>::drop_last;
+			void drop_first(size_type n);
+			void drop_last(size_type n);
 		};
 	}
 
@@ -286,12 +305,12 @@ namespace stdext
 
 	namespace detail
 	{
-		template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference, class BaseCategory = RangeCategory>
+		template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Difference, typename Reference, class BaseCategory = RangeCategory>
 		class reverse_range_base;
 
-		template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
-		class reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag> :
-			public range<RangeCategory, T, Position, Size, Reference>
+		template <class DoubleEndedRange, class RangeCategory, typename T, typename Position, typename Size, typename Difference, typename Reference>
+		class reverse_range_base<DoubleEndedRange, RangeCategory, T, Position, Size, Difference, Reference, double_ended_range_tag> :
+			public range<RangeCategory, T, Position, Size, Difference, Reference>
 		{
 		public:
 			bool empty() const;
@@ -299,21 +318,22 @@ namespace stdext
 			reference front() const;
 			reference back() const;
 
-			void drop_first(size_type n = 1);
-			void drop_last(size_type n = 1);
+			void drop_first();
+			void drop_last();
 
 			reference at_pos(position_type pos) const;
 
 			position_type begin_pos() const;
+			void begin_pos(position_type pos);
 			position_type end_pos() const;
-
-			void drop_before(position_type pos);
-			void drop_after(position_type pos);
+			void end_pos(position_type pos);
+			void advance_pos(position_type& p, difference_type n) const;
+			difference_type distance(position_type first, position_type last) const;
 		};
 
-		template <class RandomAccessRange, class RangeCategory, typename T, typename Position, typename Size, typename Reference>
-		class reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, random_access_range_tag> :
-			public reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Reference, double_ended_range_tag>
+		template <class RandomAccessRange, class RangeCategory, typename T, typename Position, typename Size, typename Difference, typename Reference>
+		class reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Difference, Reference, random_access_range_tag> :
+			public reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Difference, Reference, double_ended_range_tag>
 		{
 		public:
 			reference operator[](size_type n) const;
@@ -321,6 +341,11 @@ namespace stdext
 			position_type position_at(size_type n) const;
 			size_type index_at(position_type pos) const;
 			size_type length() const;
+
+			using reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Difference, Reference, double_ended_range_tag>::drop_first;
+			using reverse_range_base<RandomAccessRange, RangeCategory, T, Position, Size, Difference, Reference, double_ended_range_tag>::drop_last;
+			void drop_first(size_type n);
+			void drop_last(size_type n);
 		};
 	}
 
@@ -330,6 +355,7 @@ namespace stdext
 		typename range_traits<DoubleEndedRange>::value_type,
 		typename range_traits<DoubleEndedRange>::position_type,
 		typename range_traits<DoubleEndedRange>::size_type,
+		typename range_traits<DoubleEndedRange>::difference_type,
 		typename range_traits<DoubleEndedRange>::reference>
 	{
 	public:

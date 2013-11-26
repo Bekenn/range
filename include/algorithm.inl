@@ -15,7 +15,7 @@ namespace stdext
 		{
 			if (!pred(range.front()))
 				return false;
-			range.shrink_front();
+			range.drop_first();
 		}
 
 		return true;
@@ -28,7 +28,7 @@ namespace stdext
 		{
 			if (pred(range.front()))
 				return true;
-			range.shrink_front();
+			range.drop_first();
 		}
 
 		return false;
@@ -46,7 +46,7 @@ namespace stdext
 		while (!range.empty())
 		{
 			f(range.front());
-			range.shrink_front();
+			range.drop_first();
 		}
 	}
 
@@ -63,7 +63,7 @@ namespace stdext
 		{
 			if (pred(range.front()))
 				return range;
-			range.shrink_front();
+			range.drop_first();
 		}
 
 		return range;
@@ -96,8 +96,8 @@ namespace stdext
 				if (!pred(r1.front(), r2.front()))
 					break;
 
-				r1.shrink_front();
-				r2.shrink_front();
+				r1.drop_first();
+				r2.drop_first();
 			}
 
 			if (r2.empty())
@@ -106,7 +106,7 @@ namespace stdext
 			if (r1.empty())
 				break;
 
-			range1.shrink_front();
+			range1.drop_first();
 		}
 
 		return result;
@@ -128,10 +128,10 @@ namespace stdext
 			{
 				if (pred(range1.front(), r2.front()))
 					return range1;
-				r2.shrink_front();
+				r2.drop_first();
 			}
 
-			range1.shrink_front();
+			range1.drop_first();
 		}
 
 		return range1;
@@ -150,13 +150,13 @@ namespace stdext
 			return range;
 
 		auto r = range;
-		r.shrink_front();
+		r.drop_first();
 		while (!r.empty())
 		{
 			if (pred(range.front(), r.front()))
 				return range;
-			r.shrink_front();
-			range.shrink_front();
+			r.drop_first();
+			range.drop_first();
 		}
 
 		return r;
@@ -175,54 +175,54 @@ namespace stdext
 		{
 			if (pred(range.front()))
 				return range.begin();
-			range.shrink_front;
+			range.drop_first;
 		}
 
 		return range.end();
 	}
 
 	template<class SinglePassRange, class InputIterator>
-	typename std::enable_if<!is_range<InputIterator>::value, std::pair<SinglePassRange, InputIterator>>::type
+	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<SinglePassRange>::position_type, InputIterator>>::type
 		mismatch(SinglePassRange range1, InputIterator first2)
 	{
 		return mismatch(range1, first2, std::equal_to<>());
 	}
 
 	template <class SinglePassRange, class InputIterator, class BinaryPredicate>
-	typename std::enable_if<!is_range<InputIterator>::value, std::pair<SinglePassRange, InputIterator>>::type
+	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<SinglePassRange>::position_type, InputIterator>>::type
 		mismatch(SinglePassRange range1, InputIterator first2, BinaryPredicate pred)
 	{
 		while (!range1.empty())
 		{
 			if (!pred(range1.front(), *first2))
-				return std::make_pair(range1, first2);
-			range1.shrink_front();
+				return std::make_pair(range1.begin_pos(), first2);
+			range1.drop_first();
 			++first2;
 		}
 
-		return make_pair(range1, first2);
+		return make_pair(range1.begin_pos(), first2);
 	}
 
 	template<class SinglePassRange1, class SinglePassRange2>
-	typename std::enable_if<is_range<SinglePassRange2>::value, std::pair<SinglePassRange1, SinglePassRange2>>::type
+	typename std::enable_if<is_range<SinglePassRange2>::value, std::pair<typename range_traits<SinglePassRange1>::position_type, typename range_traits<SinglePassRange2>::position_type>>::type
 		mismatch(SinglePassRange1 range1, SinglePassRange2 range2)
 	{
 		return mismatch(range1, range2, std::equal_to<>());
 	}
 
 	template<class SinglePassRange1, class SinglePassRange2, class BinaryPredicate>
-	typename std::enable_if<is_range<SinglePassRange2>::value, std::pair<SinglePassRange1, SinglePassRange2>>::type
+	typename std::enable_if<is_range<SinglePassRange2>::value, std::pair<typename range_traits<SinglePassRange1>::position_type, typename range_traits<SinglePassRange2>::position_type>>::type
 		mismatch(SinglePassRange1 range1, SinglePassRange2 range2, BinaryPredicate pred)
 	{
 		while (!range1.empty() && !range2.empty())
 		{
 			if (!pred(range1.front(), range2.front()))
-				return std::make_pair(range1, range2);
-			range1.shrink_front();
-			range2.shrink_front();
+				return std::make_pair(range1.begin_pos(), range2.begin_pos());
+			range1.drop_first();
+			range2.drop_first();
 		}
 
-		return std::make_pair(range1, range2);
+		return std::make_pair(range1.begin_pos(), range2.begin_pos());
 	}
 
 	template<class SinglePassRange1, class InputIterator2>
@@ -240,7 +240,7 @@ namespace stdext
 		{
 			if (!pred(range1.front(), *first2))
 				return false;
-			range1.shrink_front();
+			range1.drop_first();
 			++first2;
 		}
 
@@ -262,8 +262,8 @@ namespace stdext
 		{
 			if (!pred(range1.front(), range2.front()))
 				return false;
-			range1.shrink_front();
-			range2.shrink_front();
+			range1.drop_first();
+			range2.drop_first();
 		}
 
 		return true;
@@ -577,7 +577,7 @@ namespace stdext
 			}
 		}
 
-		return range.drop_after(r.begin_pos());
+		return range.end_pos(r.begin_pos());
 	}
 
 	template<class SinglePassRange, class OutputIterator, class T>
@@ -629,7 +629,7 @@ namespace stdext
 		}
 
 		dest.drop_first();
-		range.drop_after(dest.begin_pos());
+		range.end_pos(dest.begin_pos());
 		return range;
 	}
 
@@ -912,7 +912,7 @@ namespace stdext
 				}
 				else
 				{
-					range.drop_after(r.begin_pos());
+					range.end_pos(r.begin_pos());
 					length = offset;
 				}
 			}
@@ -931,9 +931,9 @@ namespace stdext
 			{
 				auto pos = range.position_at(range.length() / 2);
 				if (pred(range.at_pos(pos)))
-					range.drop_before(pos);
+					range.begin_pos(pos);
 				else
-					range.drop_after(pos);
+					range.end_pos(pos);
 			}
 
 			if (range.length() == 1)
@@ -1077,7 +1077,7 @@ namespace stdext
 			r.front() = range.front();
 
 		if (range.empty())
-			result_range.drop_after(r.begin_pos());
+			result_range.end_pos(r.begin_pos());
 
 		while (!range.empty())
 		{
@@ -1207,8 +1207,8 @@ namespace stdext
 	template<class MultiPassRange, class T, class Compare>
 	MultiPassRange equal_range(MultiPassRange range, const T& value, Compare comp)
 	{
-		range.drop_before(lower_bound(range, value, comp));
-		range.drop_after(upper_bound(range, value, comp));
+		range.begin_pos(lower_bound(range, value, comp));
+		range.end_pos(upper_bound(range, value, comp));
 		return range;
 	}
 
@@ -1221,7 +1221,7 @@ namespace stdext
 	template<class MultiPassRange, class T, class Compare>
 	bool binary_search(MultiPassRange range, const T& value, Compare comp)
 	{
-		range.drop_before(lower_bound(range, value, comp));
+		range.begin_pos(lower_bound(range, value, comp));
 		return !range.empty() && !comp(value, range.front());
 	}
 
@@ -1543,7 +1543,7 @@ namespace stdext
 		for (r.drop_first(); !r.empty(); r.drop_first())
 		{
 			if (comp(r.front(), range.front()))
-				range.drop_before(r.begin_pos());
+				range.begin_pos(r.begin_pos());
 		}
 
 		return range.begin_pos();
@@ -1565,7 +1565,7 @@ namespace stdext
 		for (r.drop_first(); !r.empty(); r.drop_first())
 		{
 			if (comp(range.front(), r.front()))
-				range.drop_before(r.begin_pos());
+				range.begin_pos(r.begin_pos());
 		}
 
 		return range.begin_pos();
@@ -1590,9 +1590,9 @@ namespace stdext
 		for (range.drop_first(); !range.empty(); range.drop_first())
 		{
 			if (comp(range.front(), min_range.front()))
-				min_range.drop_before(range.begin_pos());
+				min_range.begin_pos(range.begin_pos());
 			if (comp(max_range.front(), range.front()))
-				max_range.drop_before(range.begin_pos());
+				max_range.begin_pos(range.begin_pos());
 		}
 
 		return std::make_pair(min_range.begin_pos(), max_range.begin_pos());
@@ -1638,7 +1638,7 @@ namespace stdext
 			if (comp(r.front(), r2.front()))
 			{
 				swap(r.front(), r2.front());
-				range.drop_before(r2.begin_pos());
+				range.begin_pos(r2.begin_pos());
 				range.drop_first();
 				sort(std::move(range), std::move(comp));
 				return true;
@@ -1669,7 +1669,7 @@ namespace stdext
 			if (comp(r2.front(), r.front()))
 			{
 				swap(r.front(), r2.front());
-				range.drop_before(r2.begin_pos());
+				range.begin_pos(r2.begin_pos());
 				range.drop_first();
 				sort(std::move(range), std::move(comp));
 				return true;
