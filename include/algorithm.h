@@ -20,25 +20,25 @@ namespace stdext
 	template<class InputRange, class Function>
 	Function for_each(const InputRange& range, Function f);
 	template<class InputRange, class T>
-	typename range::range_traits<InputRange>::position_type find(const InputRange& range, const T& value);
+	typename range_traits<InputRange>::position_type find(const InputRange& range, const T& value);
 	template<class InputRange, class Predicate>
-	typename range::range_traits<InputRange>::position_type find_if(const InputRange& range, Predicate pred);
+	typename range_traits<InputRange>::position_type find_if(const InputRange& range, Predicate pred);
 	template<class InputRange, class Predicate>
-	typename range::range_traits<InputRange>::position_type find_if_not(const InputRange& range, Predicate pred);
+	typename range_traits<InputRange>::position_type find_if_not(const InputRange& range, Predicate pred);
 	template<class ForwardRange1, class ForwardRange2>
-	typename range::range_traits<ForwardRange1>::position_type find_end(const ForwardRange1& range1, const ForwardRange2& range2);
+	typename range_traits<ForwardRange1>::position_type find_end(const ForwardRange1& range1, const ForwardRange2& range2);
 	template<class ForwardRange1, class ForwardRange2, class BinaryPredicate>
-	typename range::range_traits<ForwardRange1>::position_type find_end(const ForwardRange1& range1, const ForwardRange2& range2, BinaryPredicate pred);
+	typename range_traits<ForwardRange1>::position_type find_end(const ForwardRange1& range1, const ForwardRange2& range2, BinaryPredicate pred);
 
 	template<class InputRange, class ForwardRange>
-	typename range::range_traits<InputRange>::position_type find_first_of(const InputRange& range1, const ForwardRange& range2);
+	typename range_traits<InputRange>::position_type find_first_of(const InputRange& range1, const ForwardRange& range2);
 	template<class InputRange, class ForwardRange, class BinaryPredicate>
-	typename range::range_traits<InputRange>::position_type find_first_of(const InputRange& range1, const ForwardRange& range2, BinaryPredicate pred);
+	typename range_traits<InputRange>::position_type find_first_of(const InputRange& range1, const ForwardRange& range2, BinaryPredicate pred);
 
 	template<class ForwardRange>
-	typename range::range_traits<ForwardRange>::position_type adjacent_find(const ForwardRange& range);
+	typename range_traits<ForwardRange>::position_type adjacent_find(const ForwardRange& range);
 	template<class ForwardRange, class BinaryPredicate>
-	typename range::range_traits<ForwardRange>::position_type adjacent_find(const ForwardRange& range, BinaryPredicate pred);
+	typename range_traits<ForwardRange>::position_type adjacent_find(const ForwardRange& range, BinaryPredicate pred);
 
 	template<class InputRange, class T>
 	std::size_t count(const InputRange& range, const T& value);
@@ -46,52 +46,52 @@ namespace stdext
 	std::size_t count_if(const InputRange& range, Predicate pred);
 
 	template<class InputRange, class InputIterator>
-	typename std::enable_if<!range::is_range<InputIterator>::value, std::pair<typename range::range_traits<InputRange>::position_type, InputIterator>>::type
+	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<InputRange>::position_type, InputIterator>>::type
 		mismatch(const InputRange& range1, InputIterator first2);
 	template <class InputRange, class InputIterator, class BinaryPredicate>
-	typename std::enable_if<!range::is_range<InputIterator>::value, std::pair<typename range::range_traits<InputRange>::position_type, InputIterator>>::type
+	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<InputRange>::position_type, InputIterator>>::type
 		mismatch(const InputRange& range1, InputIterator first2, BinaryPredicate pred);
 	template<class InputRange1, class InputRange2>
-	typename std::enable_if<range::is_range<InputRange2>::value, std::pair<typename range::range_traits<InputRange1>::position_type, typename range::range_traits<InputRange2>::position_type>>::type
+	typename std::enable_if<is_range<InputRange2>::value, std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>>::type
 		mismatch(const InputRange1& range1, const InputRange2& range2);
 	template<class InputRange1, class InputRange2, class BinaryPredicate>
-	typename std::enable_if<range::is_range<InputRange2>::value, std::pair<typename range::range_traits<InputRange1>::position_type, typename range::range_traits<InputRange2>::position_type>>::type
+	typename std::enable_if<is_range<InputRange2>::value, std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>>::type
 		mismatch(const InputRange1& range1, const InputRange2& range2, BinaryPredicate pred);
 
 	template<class InputRange1, class InputIterator2>
-	typename std::enable_if<!range::is_range<InputIterator2>::value, bool>::type
+	typename std::enable_if<!is_range<InputIterator2>::value, bool>::type
 		equal(const InputRange1& range1, InputIterator2 first2);
 	template <class InputRange1, class InputIterator2, class BinaryPredicate>
-	typename std::enable_if<!range::is_range<InputIterator2>::value, bool>::type
+	typename std::enable_if<!is_range<InputIterator2>::value, bool>::type
 		equal(const InputRange1& range1, InputIterator2 first2, BinaryPredicate pred);
 	template<class InputRange1, class InputRange2>
-	typename std::enable_if<range::is_range<InputRange2>::value, bool>::type
+	typename std::enable_if<is_range<InputRange2>::value, bool>::type
 		equal(const InputRange1& range1, const InputRange2& range2);
 	template<class InputRange1, class InputRange2, class BinaryPredicate>
-	typename std::enable_if<range::is_range<InputRange2>::value, bool>::type
+	typename std::enable_if<is_range<InputRange2>::value, bool>::type
 		equal(const InputRange1& range1, const InputRange2& range2, BinaryPredicate pred);
 
 	template<class ForwardRange1, class ForwardIterator2>
-	typename std::enable_if<!range::is_range<ForwardIterator2>::value, bool>::type
+	typename std::enable_if<!is_range<ForwardIterator2>::value, bool>::type
 		is_permutation(const ForwardRange1& range1, ForwardIterator2 first2);
 	template<class ForwardRange1, class ForwardIterator2, class BinaryPredicate>
-	typename std::enable_if<!range::is_range<ForwardIterator2>::value, bool>::type
+	typename std::enable_if<!is_range<ForwardIterator2>::value, bool>::type
 		is_permutation(const ForwardRange1& range1, ForwardIterator2 first2, BinaryPredicate pred);
 	template<class ForwardRange1, class ForwardRange2>
-	typename std::enable_if<range::is_range<ForwardRange2>::value, bool>::type
+	typename std::enable_if<is_range<ForwardRange2>::value, bool>::type
 		is_permutation(const ForwardRange1& range1, const ForwardRange2& range2);
 	template<class ForwardRange1, class ForwardRange2, class BinaryPredicate>
-	typename std::enable_if<range::is_range<ForwardRange2>::value, bool>::type
+	typename std::enable_if<is_range<ForwardRange2>::value, bool>::type
 		is_permutation(const ForwardRange1& range1, const ForwardRange2& range2, BinaryPredicate pred);
 
 	template<class ForwardRange1, class ForwardRange2>
-	typename range::range_traits<ForwardRange1>::position_type search(const ForwardRange1& range1, const ForwardRange2& range2);
+	typename range_traits<ForwardRange1>::position_type search(const ForwardRange1& range1, const ForwardRange2& range2);
 	template<class ForwardRange1, class ForwardRange2, class BinaryPredicate>
-	typename range::range_traits<ForwardRange1>::position_type search(const ForwardRange1& range1, const ForwardRange2& range2, BinaryPredicate pred);
+	typename range_traits<ForwardRange1>::position_type search(const ForwardRange1& range1, const ForwardRange2& range2, BinaryPredicate pred);
 	template<class ForwardRange, class Size, class T>
-	typename range::range_traits<ForwardRange>::position_type search_n(const ForwardRange& range, Size count, const T& value);
+	typename range_traits<ForwardRange>::position_type search_n(const ForwardRange& range, Size count, const T& value);
 	template <class ForwardRange, class Size, class T, class BinaryPredicate>
-	typename range::range_traits<ForwardRange>::position_type search_n(const ForwardRange& range, Size count, const T& value, BinaryPredicate pred);
+	typename range_traits<ForwardRange>::position_type search_n(const ForwardRange& range, Size count, const T& value, BinaryPredicate pred);
 
 	// 25.3, modifying sequence operations:
 	// 25.3.1, copy:
@@ -131,26 +131,26 @@ namespace stdext
 	template<class ForwardRange, class T>
 	void fill(const ForwardRange& range, const T& value);
 	template<class OutputRange, class Size, class T>
-	typename range::range_traits<OutputRange>::position_type fill_n(OutputRange first, Size n, const T& value);
+	typename range_traits<OutputRange>::position_type fill_n(OutputRange first, Size n, const T& value);
 
 	template<class ForwardRange, class Generator>
 	void generate(const ForwardRange& range, Generator gen);
 	template<class OutputRange, class Size, class Generator>
-	typename range::range_traits<OutputRange>::position_type generate_n(OutputRange range, Size n, Generator gen);
+	typename range_traits<OutputRange>::position_type generate_n(OutputRange range, Size n, Generator gen);
 
 	template<class ForwardRange, class T>
-	typename range::range_traits<ForwardRange>::position_type remove(const ForwardRange& range, const T& value);
+	typename range_traits<ForwardRange>::position_type remove(const ForwardRange& range, const T& value);
 	template<class ForwardRange, class Predicate>
-	typename range::range_traits<ForwardRange>::position_type remove_if(const ForwardRange& range, Predicate pred);
+	typename range_traits<ForwardRange>::position_type remove_if(const ForwardRange& range, Predicate pred);
 	template<class InputRange, class OutputIterator, class T>
 	OutputIterator remove_copy(const InputRange& range, OutputIterator result, const T& value);
 	template<class InputRange, class OutputIterator, class Predicate>
 	OutputIterator remove_copy_if(const InputRange& range, OutputIterator result, Predicate pred);
 
 	template<class ForwardRange>
-	typename range::range_traits<ForwardRange>::position_type unique(const ForwardRange& range);
+	typename range_traits<ForwardRange>::position_type unique(const ForwardRange& range);
 	template<class ForwardRange, class BinaryPredicate>
-	typename range::range_traits<ForwardRange>::position_type unique(const ForwardRange& range, BinaryPredicate pred);
+	typename range_traits<ForwardRange>::position_type unique(const ForwardRange& range, BinaryPredicate pred);
 	template<class InputRange, class OutputIterator>
 	OutputIterator unique_copy(const InputRange& range, OutputIterator result);
 	template<class InputRange, class OutputIterator, class BinaryPredicate>
@@ -162,9 +162,9 @@ namespace stdext
 	OutputIterator reverse_copy(const BidirectionalRange& range, OutputIterator result);
 
 	template<class ForwardRange>
-	typename range::range_traits<ForwardRange>::position_type rotate(const ForwardRange& range, typename range::range_traits<ForwardRange>::position_type middle);
+	typename range_traits<ForwardRange>::position_type rotate(const ForwardRange& range, typename range_traits<ForwardRange>::position_type middle);
 	template<class ForwardRange, class OutputIterator>
-	OutputIterator rotate_copy(const ForwardRange& range, typename range::range_traits<ForwardRange>::position_type middle, OutputIterator result);
+	OutputIterator rotate_copy(const ForwardRange& range, typename range_traits<ForwardRange>::position_type middle, OutputIterator result);
 
 	template<class RandomAccessRange>
 	void random_shuffle(const RandomAccessRange& range);
@@ -177,13 +177,13 @@ namespace stdext
 	template <class InputRange, class Predicate>
 	bool is_partitioned(const InputRange& range, Predicate pred);
 	template<class ForwardRange, class Predicate>
-	typename range::range_traits<ForwardRange>::position_type partition(const ForwardRange& range, Predicate pred);
+	typename range_traits<ForwardRange>::position_type partition(const ForwardRange& range, Predicate pred);
 	template<class BidirectionalRange, class Predicate>
-	typename range::range_traits<BidirectionalRange>::position_type stable_partition(const BidirectionalRange& range, Predicate pred);
+	typename range_traits<BidirectionalRange>::position_type stable_partition(const BidirectionalRange& range, Predicate pred);
 	template <class InputRange, class OutputIterator1, class OutputIterator2, class Predicate>
 	std::pair<OutputIterator1, OutputIterator2> partition_copy(const InputRange& range, OutputIterator1 out_true, OutputIterator2 out_false, Predicate pred);
 	template<class ForwardRange, class Predicate>
-	typename range::range_traits<ForwardRange>::position_type partition_point(const ForwardRange& range, Predicate pred);
+	typename range_traits<ForwardRange>::position_type partition_point(const ForwardRange& range, Predicate pred);
 
 	// 25.4, sorting and related operations:
 	// 25.4.1, sorting:
@@ -198,36 +198,36 @@ namespace stdext
 	void stable_sort(const RandomAccessRange& range, Compare comp);
 
 	template<class RandomAccessRange>
-	void partial_sort(const RandomAccessRange& range, typename range::range_traits<RandomAccessRange>::position_type middle);
+	void partial_sort(const RandomAccessRange& range, typename range_traits<RandomAccessRange>::position_type middle);
 	template<class RandomAccessRange, class Compare>
-	void partial_sort(const RandomAccessRange& range, typename range::range_traits<RandomAccessRange>::position_type middle, Compare comp);
+	void partial_sort(const RandomAccessRange& range, typename range_traits<RandomAccessRange>::position_type middle, Compare comp);
 	template<class InputRange, class RandomAccessRange>
-	typename range::range_traits<RandomAccessRange>::position_type partial_sort_copy(const InputRange& range, const RandomAccessRange& result_range);
+	typename range_traits<RandomAccessRange>::position_type partial_sort_copy(const InputRange& range, const RandomAccessRange& result_range);
 	template<class InputRange, class RandomAccessRange, class Compare>
-	typename range::range_traits<RandomAccessRange>::position_type partial_sort_copy(const InputRange& range, const RandomAccessRange& result_range, Compare comp);
+	typename range_traits<RandomAccessRange>::position_type partial_sort_copy(const InputRange& range, const RandomAccessRange& result_range, Compare comp);
 	template<class ForwardRange>
 	bool is_sorted(const ForwardRange& range);
 	template<class ForwardRange, class Compare>
 	bool is_sorted(const ForwardRange& range, Compare comp);
 	template<class ForwardRange>
-	typename range::range_traits<ForwardRange>::position_type is_sorted_until(const ForwardRange& range);
+	typename range_traits<ForwardRange>::position_type is_sorted_until(const ForwardRange& range);
 	template<class ForwardRange, class Compare>
-	typename range::range_traits<ForwardRange>::position_type is_sorted_until(const ForwardRange& range, Compare comp);
+	typename range_traits<ForwardRange>::position_type is_sorted_until(const ForwardRange& range, Compare comp);
 
 	template<class RandomAccessRange>
-	void nth_element(const RandomAccessRange& range, typename range::range_traits<RandomAccessRange>::position_type nth);
+	void nth_element(const RandomAccessRange& range, typename range_traits<RandomAccessRange>::position_type nth);
 	template<class RandomAccessRange, class Compare>
-	void nth_element(const RandomAccessRange& range, typename range::range_traits<RandomAccessRange>::position_type nth, Compare comp);
+	void nth_element(const RandomAccessRange& range, typename range_traits<RandomAccessRange>::position_type nth, Compare comp);
 
 	// 25.4.3, binary search:
 	template<class ForwardRange, class T>
-	typename range::range_traits<ForwardRange>::position_type lower_bound(const ForwardRange& range, const T& value);
+	typename range_traits<ForwardRange>::position_type lower_bound(const ForwardRange& range, const T& value);
 	template<class ForwardRange, class T, class Compare>
-	typename range::range_traits<ForwardRange>::position_type lower_bound(const ForwardRange& range, const T& value, Compare comp);
+	typename range_traits<ForwardRange>::position_type lower_bound(const ForwardRange& range, const T& value, Compare comp);
 	template<class ForwardRange, class T>
-	typename range::range_traits<ForwardRange>::position_type upper_bound(const ForwardRange& range, const T& value);
+	typename range_traits<ForwardRange>::position_type upper_bound(const ForwardRange& range, const T& value);
 	template<class ForwardRange, class T, class Compare>
-	typename range::range_traits<ForwardRange>::position_type upper_bound(const ForwardRange& range, const T& value, Compare comp);
+	typename range_traits<ForwardRange>::position_type upper_bound(const ForwardRange& range, const T& value, Compare comp);
 
 	template<class ForwardRange, class T>
 	ForwardRange equal_range(ForwardRange range, const T& value);
@@ -246,9 +246,9 @@ namespace stdext
 	OutputIterator merge(const InputRange1& range1, const InputRange2& range2, OutputIterator result, Compare comp);
 
 	template<class BidirectionalRange>
-	void inplace_merge(const BidirectionalRange& range, typename range::range_traits<BidirectionalRange>::position_type middle);
+	void inplace_merge(const BidirectionalRange& range, typename range_traits<BidirectionalRange>::position_type middle);
 	template<class BidirectionalRange, class Compare>
-	void inplace_merge(const BidirectionalRange& range, typename range::range_traits<BidirectionalRange>::position_type middle, Compare comp);
+	void inplace_merge(const BidirectionalRange& range, typename range_traits<BidirectionalRange>::position_type middle, Compare comp);
 
 	// 25.4.5, set operations:
 	template<class InputRange1, class InputRange2>
@@ -302,24 +302,24 @@ namespace stdext
 	template<class RandomAccessRange, class Compare>
 	bool is_heap(const RandomAccessRange& range, Compare comp);
 	template<class RandomAccessRange>
-	typename range::range_traits<RandomAccessRange>::position_type is_heap_until(const RandomAccessRange& range);
+	typename range_traits<RandomAccessRange>::position_type is_heap_until(const RandomAccessRange& range);
 	template<class RandomAccessRange, class Compare>
-	typename range::range_traits<RandomAccessRange>::position_type is_heap_until(const RandomAccessRange& range, Compare comp);
+	typename range_traits<RandomAccessRange>::position_type is_heap_until(const RandomAccessRange& range, Compare comp);
 
 	// 25.4.7, minimum and maximum:
 	template<class ForwardRange>
-	typename range::range_traits<ForwardRange>::position_type min_element(const ForwardRange& range);
+	typename range_traits<ForwardRange>::position_type min_element(const ForwardRange& range);
 	template<class ForwardRange, class Compare>
-	typename range::range_traits<ForwardRange>::position_type min_element(const ForwardRange& range, Compare comp);
+	typename range_traits<ForwardRange>::position_type min_element(const ForwardRange& range, Compare comp);
 	template<class ForwardRange>
-	typename range::range_traits<ForwardRange>::position_type max_element(const ForwardRange& range);
+	typename range_traits<ForwardRange>::position_type max_element(const ForwardRange& range);
 	template<class ForwardRange, class Compare>
-	typename range::range_traits<ForwardRange>::position_type max_element(const ForwardRange& range, Compare comp);
+	typename range_traits<ForwardRange>::position_type max_element(const ForwardRange& range, Compare comp);
 	template<class ForwardRange>
-	std::pair<typename range::range_traits<ForwardRange>::position_type, typename range::range_traits<ForwardRange>::position_type>
+	std::pair<typename range_traits<ForwardRange>::position_type, typename range_traits<ForwardRange>::position_type>
 		minmax_element(const ForwardRange& range);
 	template<class ForwardRange, class Compare>
-	std::pair<typename range::range_traits<ForwardRange>::position_type, typename range::range_traits<ForwardRange>::position_type>
+	std::pair<typename range_traits<ForwardRange>::position_type, typename range_traits<ForwardRange>::position_type>
 		minmax_element(const ForwardRange& range, Compare comp);
 
 	template<class InputRange1, class InputRange2>

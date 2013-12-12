@@ -94,7 +94,7 @@ namespace has_ ## name ## _detail { \
 	template <typename T, typename... Args> \
 struct has_ ## name : std::conditional<sizeof(has_ ## name ## _detail::has_ ## name ## _helper<T, Args...>(nullptr)) - 1, std::true_type, std::false_type>::type{}
 
-namespace stdext { namespace range
+namespace stdext
 {
 	// type traits
 	template <class Range>
@@ -546,7 +546,7 @@ namespace stdext { namespace range
 	private:
 		position_type p;
 	};
-} } // namespace stdext::range
+} // namespace stdext
 
 #include "range.inl"
 

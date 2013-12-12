@@ -1,4 +1,4 @@
-namespace stdext { namespace range
+namespace stdext
 {
 	// make_range
 	template <class Iterator>
@@ -580,4 +580,4 @@ namespace stdext { namespace range
 	{
 		return p;
 	}
-} } // stdext::range
+} // stdext
