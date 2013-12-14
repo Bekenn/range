@@ -287,9 +287,9 @@ namespace stdext
 		{
 			// range requirements
 			position_type  begin_pos() const noexcept            { return self().first; }
-			void           begin_pos(position_type p) noexcept   { self().first = p; }
+			void           begin_pos(position_type p) noexcept   { self().first = std::move(p); }
 			position_type  end_pos() const noexcept              { return self().last; }
-			void           end_pos(position_type p) noexcept     { self.last() = p; }
+			void           end_pos(position_type p) noexcept     { self.last() = std::moe(p); }
 			reference      at_pos(const position_type& p) const  { return *p; }
 			position_type& increment_pos(position_type& p) const { return ++p; }
 
