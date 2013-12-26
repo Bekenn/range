@@ -11,40 +11,40 @@ namespace stdext
 	template <class InputRange, class Predicate>
 	bool all_of(const InputRange& range, Predicate pred)
 	{
-		return std::all_of(range_traits<InputRange>(&range, range.begin_pos()),
-						   range_traits<InputRange>(&range, range.end_pos()),
+		return std::all_of(range_iterator<InputRange>(range, range.begin_pos()),
+						   range_iterator<InputRange>(range, range.end_pos()),
 						   pred);
 	}
 
 	template <class InputRange, class Predicate>
 	bool any_of(const InputRange& range, Predicate pred)
 	{
-		return std::any_of(range_traits<InputRange>(&range, range.begin_pos()),
-						   range_traits<InputRange>(&range, range.end_pos()),
+		return std::any_of(range_iterator<InputRange>(range, range.begin_pos()),
+						   range_iterator<InputRange>(range, range.end_pos()),
 						   pred);
 	}
 
 	template <class InputRange, class Predicate>
 	bool none_of(const InputRange& range, Predicate pred)
 	{
-		return std::none_of(range_traits<InputRange>(&range, range.begin_pos()),
-							range_traits<InputRange>(&range, range.end_pos()),
+		return std::none_of(range_iterator<InputRange>(range, range.begin_pos()),
+							range_iterator<InputRange>(range, range.end_pos()),
 							pred);
 	}
 
 	template<class InputRange, class Function>
 	Function for_each(const InputRange& range, Function f)
 	{
-		return std::for_each(range_traits<InputRange>(&range, range.begin_pos()),
-							 range_traits<InputRange>(&range, range.end_pos()),
+		return std::for_each(range_iterator<InputRange>(range, range.begin_pos()),
+							 range_iterator<InputRange>(range, range.end_pos()),
 							 f);
 	}
 
 	template<class InputRange, class T>
 	typename range_traits<InputRange>::position_type find(const InputRange& range, const T& value)
 	{
-		return std::find(range_traits<InputRange>(&range, range.begin_pos()),
-						 range_traits<InputRange>(&range, range.end_pos()),
+		return std::find(range_iterator<InputRange>(range, range.begin_pos()),
+						 range_iterator<InputRange>(range, range.end_pos()),
 						 value).pos();
 	}
 
@@ -705,16 +705,16 @@ namespace stdext
 	template<class ForwardRange, class T>
 	typename range_traits<ForwardRange>::position_type upper_bound(const ForwardRange& range, const T& value)
 	{
-		return std::upper_bound(range_traits<ForwardRange>(&range, range.begin_pos()),
-								range_traits<ForwardRange>(&range, range.end_pos()),
+		return std::upper_bound(range_iterator<ForwardRange>(range, range.begin_pos()),
+								range_iterator<ForwardRange>(range, range.end_pos()),
 								value).pos();
 	}
 
 	template<class ForwardRange, class T, class Compare>
 	typename range_traits<ForwardRange>::position_type upper_bound(const ForwardRange& range, const T& value, Compare comp)
 	{
-		return std::upper_bound(range_traits<ForwardRange>(&range, range.begin_pos()),
-								range_traits<ForwardRange>(&range, range.end_pos()),
+		return std::upper_bound(range_iterator<ForwardRange>(range, range.begin_pos()),
+								range_iterator<ForwardRange>(range, range.end_pos()),
 								value, comp).pos();
 	}
 

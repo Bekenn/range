@@ -41,14 +41,14 @@
 //    Returns last_pos.
 // r.begin_pos(p):
 //    first_pos = p
-// r.end_pos(p):
-//    last_pos = p
 // r.at_pos(p):
 //    Returns a reference to the sequence element identified by p.
 // r.increment_pos(p):
 //    post: p refers to the next element in the underlying sequence.
 
 // Optionally, ranges may support the following operations:
+// r.end_pos(p):
+//    last_pos = p
 // r.decrement_pos(p):
 //    post: p refers to the previous element in the underlying sequence.
 // r.advance_pos(p, n):
@@ -223,7 +223,6 @@ namespace stdext
 		detail::has_begin_pos<T>::value
 		&& detail::has_begin_pos<T, typename range_traits<T>::position_type>::value
 		&& detail::has_end_pos<T>::value
-		&& detail::has_end_pos<T, typename range_traits<T>::position_type>::value
 		&& detail::has_at_pos<T, typename range_traits<T>::position_type>::value
 		&& detail::has_increment_pos<T, typename range_traits<T>::position_type&>::value
 		, std::true_type, std::false_type>::type
@@ -249,6 +248,7 @@ namespace stdext
 	template <typename T>
 	struct is_forward_range : std::conditional<
 		is_range<T>::value
+		&& detail::has_end_pos<T, typename range_traits<T>::position_type>::value
 		&& detail::has_distance_pos<T, typename range_traits<T>::position_type, typename range_traits<T>::position_type>::value
 		, std::true_type, std::false_type>::type
 	{
@@ -289,7 +289,6 @@ namespace stdext
 			position_type  begin_pos() const noexcept            { return self().first; }
 			void           begin_pos(position_type p) noexcept   { self().first = std::move(p); }
 			position_type  end_pos() const noexcept              { return self().last; }
-			void           end_pos(position_type p) noexcept     { self.last() = std::moe(p); }
 			reference      at_pos(const position_type& p) const  { return *p; }
 			position_type& increment_pos(position_type& p) const { return ++p; }
 
@@ -303,7 +302,9 @@ namespace stdext
 		struct iterator_range_base<Range, Iterator, Category, forward_range_tag>
 			: iterator_range_base<Range, Iterator, Category, input_range_tag>
 		{
-			difference_type distance_pos(position_type p1, position_type p2) const noexcept { return std::distance(p1, p2); }
+			using iterator_range_base<Range, Iterator, Category, input_range_tag>::end_pos;
+			void            end_pos(position_type p) noexcept{ self.last() = std::move(p); }
+			difference_type distance_pos(position_type p1, position_type p2) const noexcept{ return std::distance(p1, p2); }
 		};
 
 		template <class Range, class Iterator, class Category>
@@ -350,13 +351,13 @@ namespace stdext
 		std::bidirectional_iterator_tag to_iterator_category(bidirectional_range_tag);
 		std::random_access_iterator_tag to_iterator_category(random_access_range_tag);
 
-		template <class Iterator, class Range, class Category = decltype(to_iterator_category(std::declval<typename range_traits<Range>::range_category>())), class = Category>
+		template <class Iterator, class Range, class IteratorCategory = decltype(to_iterator_category(std::declval<typename range_traits<Range>::range_category>())), class = IteratorCategory>
 		struct range_iterator_base;
 
-		template <class Iterator, class Range, class Category>
-		struct range_iterator_base<Iterator, Range, Category, std::input_iterator_tag>
+		template <class Iterator, class Range, class IteratorCategory>
+		struct range_iterator_base<Iterator, Range, IteratorCategory, std::input_iterator_tag>
 			: std::iterator<
-			Category,
+			IteratorCategory,
 			typename range_traits<Range>::value_type,
 			typename range_traits<Range>::difference_type,
 			typename std::remove_reference<typename range_traits<Range>::reference>::type*,
@@ -373,9 +374,9 @@ namespace stdext
 			const Iterator& self() const noexcept { return static_cast<const Iterator&>(*this); }
 		};
 
-		template <class Iterator, class Range, class Category>
-		bool operator == (const range_iterator_base<Iterator, Range, Category, std::input_iterator_tag>& a,
-						  const range_iterator_base<Iterator, Range, Category, std::input_iterator_tag>& b)
+		template <class Iterator, class Range, class IteratorCategory>
+		bool operator == (const range_iterator_base<Iterator, Range, IteratorCategory, std::input_iterator_tag>& a,
+						  const range_iterator_base<Iterator, Range, IteratorCategory, std::input_iterator_tag>& b)
 		{
 			const auto& ai = static_cast<const Iterator&>(a);
 			const auto& bi = static_cast<const Iterator&>(b);
@@ -383,95 +384,95 @@ namespace stdext
 				&& ai.p == bi.p;
 		}
 
-		template <class Iterator, class Range, class Category>
-		bool operator != (const range_iterator_base<Iterator, Range, Category, std::input_iterator_tag>& a,
-						  const range_iterator_base<Iterator, Range, Category, std::input_iterator_tag>& b)
+		template <class Iterator, class Range, class IteratorCategory>
+		bool operator != (const range_iterator_base<Iterator, Range, IteratorCategory, std::input_iterator_tag>& a,
+						  const range_iterator_base<Iterator, Range, IteratorCategory, std::input_iterator_tag>& b)
 		{
 			return !(a == b);
 		}
 
-		template <class Iterator, class Range, class Category>
-		struct range_iterator_base<Iterator, Range, Category, std::forward_iterator_tag>
-			: range_iterator_base<Iterator, Range, Category, std::input_iterator_tag>
+		template <class Iterator, class Range, class IteratorCategory>
+		struct range_iterator_base<Iterator, Range, IteratorCategory, std::forward_iterator_tag>
+			: range_iterator_base<Iterator, Range, IteratorCategory, std::input_iterator_tag>
 		{
 		};
 
-		template <class Iterator, class Range, class Category>
-		struct range_iterator_base<Iterator, Range, Category, std::bidirectional_iterator_tag>
-			: range_iterator_base<Iterator, Range, Category, std::forward_iterator_tag>
+		template <class Iterator, class Range, class IteratorCategory>
+		struct range_iterator_base<Iterator, Range, IteratorCategory, std::bidirectional_iterator_tag>
+			: range_iterator_base<Iterator, Range, IteratorCategory, std::forward_iterator_tag>
 		{
 			Iterator& operator -- ()   { self().range->decrement_pos(self().p); return self; }
 			Iterator operator -- (int) { auto r = self(); --*this; return r; }
 		};
 
-		template <class Iterator, class Range, class Category>
-		struct range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>
-			: range_iterator_base<Iterator, Range, Category, std::bidirectional_iterator_tag>
+		template <class Iterator, class Range, class IteratorCategory>
+		struct range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>
+			: range_iterator_base<Iterator, Range, IteratorCategory, std::bidirectional_iterator_tag>
 		{
 			Iterator& operator += (difference_type n)       { self().range->advance_pos(self().p, n); return self(); }
 			Iterator& operator -= (difference_type n)       { self().range->advance_pos(self().p, -n); return self(); }
 			reference operator [] (difference_type n) const { auto p = self().p; self().range->advance_pos(p, n); return self().range->at_pos(p); }
 		};
 
-		template <class Iterator, class Range, class Category>
-		Iterator operator + (const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& a,
-							 typename range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>::difference_type n)
+		template <class Iterator, class Range, class IteratorCategory>
+		Iterator operator + (const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& a,
+							 typename range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>::difference_type n)
 		{
 			auto i = static_cast<const Iterator&>(a);
 			return i += n;
 		}
 
-		template <class Iterator, class Range, class Category>
-		Iterator operator + (typename range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>::difference_type n,
-							 const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& a)
+		template <class Iterator, class Range, class IteratorCategory>
+		Iterator operator + (typename range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>::difference_type n,
+							 const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& a)
 		{
 			return a + i;
 		}
 
-		template <class Iterator, class Range, class Category>
-		typename range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>::difference_type
-			operator - (const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& a,
-			            const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class Range, class IteratorCategory>
+		typename range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>::difference_type
+			operator - (const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& a,
+			            const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			const auto& ai = static_cast<const Iterator&>(a);
 			const auto& bi = static_cast<const Iterator&>(b);
 			return ai.range->distance_pos(bi.pos(), ai.pos());
 		}
 
-		template <class Iterator, class Range, class Category>
-		Iterator operator - (const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& a,
-							 typename range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>::difference_type n)
+		template <class Iterator, class Range, class IteratorCategory>
+		Iterator operator - (const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& a,
+							 typename range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>::difference_type n)
 		{
 			auto i = static_cast<const Iterator&>(a);
 			return i -= n;
 		}
 
-		template <class Iterator, class Range, class Category>
-		bool operator < (const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& a,
-						 const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class Range, class IteratorCategory>
+		bool operator < (const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& a,
+						 const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			const auto& ai = static_cast<Iterator>(a);
 			const auto& bi = static_cast<Iterator>(b);
 			return ai.pos() < bi.pos();
 		}
 
-		template <class Iterator, class Range, class Category>
-		bool operator > (const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& a,
-						 const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class Range, class IteratorCategory>
+		bool operator > (const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& a,
+						 const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			return b < a;
 		}
 
-		template <class Iterator, class Range, class Category>
-		bool operator <= (const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& a,
-						  const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class Range, class IteratorCategory>
+		bool operator <= (const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& a,
+						  const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			return !(b < a);
 		}
 
-		template <class Iterator, class Range, class Category>
-		bool operator >= (const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& a,
-						  const range_iterator_base<Iterator, Range, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class Range, class IteratorCategory>
+		bool operator >= (const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& a,
+						  const range_iterator_base<Iterator, Range, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			return !(a < b);
 		}
@@ -484,6 +485,7 @@ namespace stdext
 	public:
 		typedef Range range_type;
 		typedef typename range_traits<Range>::position_type position_type;
+		typedef decltype(detail::to_iterator_category(std::declval<typename range_traits<Range>::range_category>())) iterator_category;
 
 	public:
 		range_iterator() : range(), p() { }
@@ -495,26 +497,24 @@ namespace stdext
 		position_type pos() const { return p; }
 
 	private:
-		template <class _Iterator, class _Range, class _Category>
-		friend bool detail::operator == (const detail::range_iterator_base<_Iterator, _Range, _Category, std::input_iterator_tag>& a,
-										 const detail::range_iterator_base<_Iterator, _Range, _Category, std::input_iterator_tag>& b);
-		template <class _Iterator, class _Range, class _Category>
-		friend bool detail::operator < (const detail::range_iterator_base<_Iterator, _Range, _Category, std::random_access_iterator_tag>& a,
-										const detail::range_iterator_base<_Iterator, _Range, _Category, std::random_access_iterator_tag>& b);
-		friend struct detail::range_iterator_base<range_iterator<Range>, Range>;
+		friend bool detail::operator == (const detail::range_iterator_base<range_iterator, Range, iterator_category, std::input_iterator_tag>& a,
+										 const detail::range_iterator_base<range_iterator, Range, iterator_category, std::input_iterator_tag>& b);
+		friend bool detail::operator < (const detail::range_iterator_base<range_iterator, Range, iterator_category, std::random_access_iterator_tag>& a,
+										const detail::range_iterator_base<range_iterator, Range, iterator_category, std::random_access_iterator_tag>& b);
+		friend struct detail::range_iterator_base<range_iterator, Range, iterator_category, std::input_iterator_tag>;
 		const range_type* range;
 		position_type p;
 	};
 
 	namespace detail
 	{
-		template <class Iterator, class Category = decltype(to_iterator_category(std::declval<typename range_traits<Range>::range_category>())), class = Category>
+		template <class Iterator, class IteratorCategory = decltype(to_iterator_category(std::declval<typename range_traits<Range>::range_category>())), class = IteratorCategory>
 		struct iterator_range_iterator_base;
 
-		template <class Iterator, class Category>
-		struct iterator_range_iterator_base<Iterator, Category, std::input_iterator_tag>
+		template <class Iterator, class IteratorCategory>
+		struct iterator_range_iterator_base<Iterator, IteratorCategory, std::input_iterator_tag>
 			: std::iterator<
-			Category,
+			IteratorCategory,
 			typename range_traits<typename Iterator::Range>::value_type,
 			typename range_traits<typename Iterator::Range>::difference_type,
 			typename range_traits<typename Iterator::Range>::reference>
@@ -530,104 +530,104 @@ namespace stdext
 			const Iterator& self() const noexcept { return static_cast<const Iterator&>(*this); }
 		};
 
-		template <class Iterator, class Category>
-		bool operator == (const iterator_range_iterator_base<Iterator, Category, std::input_iterator_tag>& a,
-						  const iterator_range_iterator_base<Iterator, Category, std::input_iterator_tag>& b)
+		template <class Iterator, class IteratorCategory>
+		bool operator == (const iterator_range_iterator_base<Iterator, IteratorCategory, std::input_iterator_tag>& a,
+						  const iterator_range_iterator_base<Iterator, IteratorCategory, std::input_iterator_tag>& b)
 		{
 			const auto& ai = static_cast<const Iterator&>(a);
 			const auto& bi = static_cast<const Iterator&>(b);
 			return ai.p == bi.p;
 		}
 
-		template <class Iterator, class Category>
-		bool operator != (const iterator_range_iterator_base<Iterator, Category, std::input_iterator_tag>& a,
-						  const iterator_range_iterator_base<Iterator, Category, std::input_iterator_tag>& b)
+		template <class Iterator, class IteratorCategory>
+		bool operator != (const iterator_range_iterator_base<Iterator, IteratorCategory, std::input_iterator_tag>& a,
+						  const iterator_range_iterator_base<Iterator, IteratorCategory, std::input_iterator_tag>& b)
 		{
 			return !(a == b);
 		}
 
-		template <class Iterator, class Category>
-		struct iterator_range_iterator_base<Iterator, Category, std::forward_iterator_tag>
-			: iterator_range_iterator_base<Iterator, Category, std::input_iterator_tag>
+		template <class Iterator, class IteratorCategory>
+		struct iterator_range_iterator_base<Iterator, IteratorCategory, std::forward_iterator_tag>
+			: iterator_range_iterator_base<Iterator, IteratorCategory, std::input_iterator_tag>
 		{
 		};
 
-		template <class Iterator, class Category>
-		struct iterator_range_iterator_base<Iterator, Category, std::bidirectional_iterator_tag>
-			: iterator_range_iterator_base<Iterator, Category, std::forward_iterator_tag>
+		template <class Iterator, class IteratorCategory>
+		struct iterator_range_iterator_base<Iterator, IteratorCategory, std::bidirectional_iterator_tag>
+			: iterator_range_iterator_base<Iterator, IteratorCategory, std::forward_iterator_tag>
 		{
 			Iterator& operator -- ()   { --self().p; return self(); }
 			Iterator operator -- (int) { auto r = self(); --*this; return r; }
 		};
 
-		template <class Iterator, class Category>
-		struct iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>
-			: iterator_range_iterator_base<Iterator, Category, std::bidirectional_iterator_tag>
+		template <class Iterator, class IteratorCategory>
+		struct iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>
+			: iterator_range_iterator_base<Iterator, IteratorCategory, std::bidirectional_iterator_tag>
 		{
 			Iterator& operator += (difference_type n)       { self().p += n; return self(); }
 			Iterator& operator -= (difference_type n)       { self().p -= n; return self(); }
 			reference operator [] (difference_type n) const { return self().p[n]; }
 		};
 
-		template <class Iterator, class Category>
-		Iterator operator + (const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& a,
-							 typename iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>::difference_type n)
+		template <class Iterator, class IteratorCategory>
+		Iterator operator + (const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& a,
+							 typename iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>::difference_type n)
 		{
 			auto i = static_cast<const Iterator&>(a);
 			return i += n;
 		}
 
-		template <class Iterator, class Category>
-		Iterator operator + (typename iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>::difference_type n,
-							 const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& a)
+		template <class Iterator, class IteratorCategory>
+		Iterator operator + (typename iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>::difference_type n,
+							 const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& a)
 		{
 			return a + i;
 		}
 
-		template <class Iterator, class Category>
-		typename iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>::difference_type
-			operator - (const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& a,
-			const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class IteratorCategory>
+		typename iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>::difference_type
+			operator - (const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& a,
+			const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			const auto& ai = static_cast<const Iterator&>(a);
 			const auto& bi = static_cast<const Iterator&>(b);
 			bi.pos() - ai.pos();
 		}
 
-		template <class Iterator, class Category>
-		Iterator operator - (const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& a,
-							 typename iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>::difference_type n)
+		template <class Iterator, class IteratorCategory>
+		Iterator operator - (const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& a,
+							 typename iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>::difference_type n)
 		{
 			auto i = static_cast<const Iterator&>(a);
 			return i -= n;
 		}
 
-		template <class Iterator, class Category>
-		bool operator < (const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& a,
-						 const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class IteratorCategory>
+		bool operator < (const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& a,
+						 const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			const auto& ai = static_cast<Iterator>(a);
 			const auto& bi = static_cast<Iterator>(b);
 			return ai.pos() < bi.pos();
 		}
 
-		template <class Iterator, class Category>
-		bool operator > (const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& a,
-						 const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class IteratorCategory>
+		bool operator > (const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& a,
+						 const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			return b < a;
 		}
 
-		template <class Iterator, class Category>
-		bool operator <= (const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& a,
-						  const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class IteratorCategory>
+		bool operator <= (const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& a,
+						  const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			return !(b < a);
 		}
 
-		template <class Iterator, class Category>
-		bool operator >= (const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& a,
-						  const iterator_range_iterator_base<Iterator, Category, std::random_access_iterator_tag>& b)
+		template <class Iterator, class IteratorCategory>
+		bool operator >= (const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& a,
+						  const iterator_range_iterator_base<Iterator, IteratorCategory, std::random_access_iterator_tag>& b)
 		{
 			return !(a < b);
 		}
