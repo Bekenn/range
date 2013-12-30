@@ -18,9 +18,9 @@
 		61BE6C32186C275500FB3B92 /* algorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = algorithm.cpp; sourceTree = "<group>"; };
 		61BE6C33186C275500FB3B92 /* range.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = range.cpp; sourceTree = "<group>"; };
 		61BE6C37186C276400FB3B92 /* algorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = algorithm.h; sourceTree = "<group>"; };
-		61BE6C38186C276400FB3B92 /* algorithm.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = algorithm.inl; sourceTree = "<group>"; };
+		61BE6C38186C276400FB3B92 /* algorithm.inl */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = algorithm.inl; sourceTree = "<group>"; };
 		61BE6C39186C276400FB3B92 /* range.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = range.h; sourceTree = "<group>"; };
-		61BE6C3A186C276400FB3B92 /* range.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = range.inl; sourceTree = "<group>"; };
+		61BE6C3A186C276400FB3B92 /* range.inl */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = range.inl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
