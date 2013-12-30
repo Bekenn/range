@@ -513,10 +513,12 @@ namespace stdext
 		position_type pos() const { return p; }
 
 	private:
-		friend bool detail::operator == (const detail::range_iterator_base<range_iterator, Range, iterator_category, std::input_iterator_tag>& a,
-										 const detail::range_iterator_base<range_iterator, Range, iterator_category, std::input_iterator_tag>& b);
-		friend bool detail::operator < (const detail::range_iterator_base<range_iterator, Range, iterator_category, std::random_access_iterator_tag>& a,
-										const detail::range_iterator_base<range_iterator, Range, iterator_category, std::random_access_iterator_tag>& b);
+		friend bool detail::operator == <range_iterator, Range, iterator_category>
+		(const detail::range_iterator_base<range_iterator, Range, iterator_category, std::input_iterator_tag>& a,
+		 const detail::range_iterator_base<range_iterator, Range, iterator_category, std::input_iterator_tag>& b);
+		friend bool detail::operator < <range_iterator, Range, iterator_category>
+		(const detail::range_iterator_base<range_iterator, Range, iterator_category, std::random_access_iterator_tag>& a,
+		 const detail::range_iterator_base<range_iterator, Range, iterator_category, std::random_access_iterator_tag>& b);
 		friend struct detail::range_iterator_base<range_iterator, Range, iterator_category, std::input_iterator_tag>;
 		const range_type* range;
 		position_type p;
@@ -531,9 +533,9 @@ namespace stdext
 		struct iterator_range_iterator_base<Iterator, Range, IteratorCategory, std::input_iterator_tag>
 			: std::iterator<
 			IteratorCategory,
-			typename range_traits<typename Iterator::Range>::value_type,
-			typename range_traits<typename Iterator::Range>::difference_type,
-			typename range_traits<typename Iterator::Range>::reference>
+			typename range_traits<Range>::value_type,
+			typename range_traits<Range>::difference_type,
+			typename range_traits<Range>::reference>
 		{
 			typedef typename std::iterator_traits<iterator_range_iterator_base>::reference reference;
 			typedef typename std::iterator_traits<iterator_range_iterator_base>::pointer pointer;
