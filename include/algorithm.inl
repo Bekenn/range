@@ -157,7 +157,7 @@ namespace stdext
 	typename std::enable_if<is_range<InputRange2>::value, std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>>::type
 		mismatch(const InputRange1& range1, const InputRange2& range2)
 	{
-		return mismatch(range1, range2, std::equal_to<>());
+		return mismatch(range1, range2, [](typename stdext::range_traits<InputRange1>::reference a, typename stdext::range_traits<InputRange2>::reference b) { return a == b; });
 	}
 
 	template<class InputRange1, class InputRange2, class BinaryPredicate>
@@ -187,8 +187,8 @@ namespace stdext
 	typename std::enable_if<!is_range<InputIterator2>::value, bool>::type
 		equal(const InputRange1& range1, InputIterator2 first2, BinaryPredicate pred)
 	{
-		return std::equal(range_iterator<InputRange1>(range, range1.begin_pos()),
-						  range_iterator<InputRange1>(range, range1.end_pos()),
+		return std::equal(range_iterator<InputRange1>(range1, range1.begin_pos()),
+						  range_iterator<InputRange1>(range1, range1.end_pos()),
 						  first2, pred);
 	}
 
@@ -196,7 +196,7 @@ namespace stdext
 	typename std::enable_if<is_range<InputRange2>::value, bool>::type
 		equal(const InputRange1& range1, const InputRange2& range2)
 	{
-		return equal(range1, range2, std::equal_to<>());
+		return equal(range1, range2, [](typename range_traits<InputRange1>::reference a, typename range_traits<InputRange2>::reference b) { return a == b; });
 	}
 
 	template<class InputRange1, class InputRange2, class BinaryPredicate>
@@ -230,7 +230,7 @@ namespace stdext
 	typename std::enable_if<is_range<ForwardRange2>::value, bool>::type
 		is_permutation(const ForwardRange1& range1, const ForwardRange2& range2)
 	{
-		return is_permutation(range1, range2, std::equal_to<>());
+		return is_permutation(range1, range2, [](typename range_traits<ForwardRange1>::reference a, typename range_traits<ForwardRange2>::reference b) { return a == b; });
 	}
 
 	template<class ForwardRange1, class ForwardRange2, class BinaryPredicate>
@@ -434,7 +434,7 @@ namespace stdext
 	OutputIterator remove_copy(const InputRange& range, OutputIterator result, const T& value)
 	{
 		return std::remove_copy(range_iterator<InputRange>(range, range.begin_pos()),
-								range_iterator<InputRange>(range, rane.end_pos()),
+								range_iterator<InputRange>(range, range.end_pos()),
 								result, value);
 	}
 

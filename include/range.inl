@@ -11,7 +11,7 @@ namespace stdext
 	template <class Range>
 	bool empty(const Range& r)
 	{
-		static_assert(is_range<Range>::value, __FUNCTION__ ": argument is not a range");
+		static_assert(is_range<Range>::value, "stdext::empty(const Range&): argument is not a range");
 		return r.begin_pos() == r.end_pos();
 	}
 
@@ -30,14 +30,14 @@ namespace stdext
 	template <class Range>
 	typename range_traits<Range>::reference front(const Range& r)
 	{
-		static_assert(is_range<Range>::value, __FUNCTION__ ": argument is not a range");
+		static_assert(is_range<Range>::value, "stdext::front(const Range&): argument is not a range");
 		return r.at_pos(r.begin_pos());
 	}
 
 	template <class BidirectionalRange>
 	typename range_traits<BidirectionalRange>::reference back(const BidirectionalRange& r)
 	{
-		static_assert(is_bidirectional_range<BidirectionalRange>::value, __FUNCTION__ ": argument is not a bidirectional range");
+		static_assert(is_bidirectional_range<BidirectionalRange>::value, "stdext::back(const BidirectionalRange&): argument is not a bidirectional range");
 		auto p = r.end_pos();
 		r.decrement_pos(p);
 		return r.at_pos(p);
@@ -46,7 +46,7 @@ namespace stdext
 	template <class Range>
 	void drop_first(Range& r, typename range_traits<Range>::difference_type n)
 	{
-		static_assert(is_range<Range>::value, __FUNCTION__ ": argument is not a range");
+		static_assert(is_range<Range>::value, "stdext::drop_first(Range&, : argument is not a range");
 		auto p = r.begin_pos();
 		advance_pos(r, p, n);
 		r.begin_pos(p);
@@ -55,7 +55,7 @@ namespace stdext
 	template <class BidirectionalRange>
 	void drop_last(BidirectionalRange& r, typename range_traits<BidirectionalRange>::difference_type n)
 	{
-		static_assert(is_bidirectional_range<BidirectionalRange>::value, __FUNCTION__ ": argument is not a bidirectional range");
+		static_assert(is_bidirectional_range<BidirectionalRange>::value, "stdext::drop_last(BidirectionalRange&, difference_type): argument is not a bidirectional range");
 		auto p = r.end_pos();
 		advance(r, p, -n);
 		r.end_pos(p);
@@ -80,7 +80,7 @@ namespace stdext
 		typename range_traits<Range>::position_type& advance_pos(const Range& r, typename range_traits<Range>::position_type& p, typename range_traits<Range>::difference_type n, std::false_type /* is_random_access_range */)
 		{
 			if (n < 0)
-				return advance_pos_neg(r, p, -n, is_bidirectional_range<Range>);
+				return advance_pos_neg(r, p, -n, is_bidirectional_range<Range>::value);
 
 			while (n-- > 0)
 				r.increment_pos(p);
