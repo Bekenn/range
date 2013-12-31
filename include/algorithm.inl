@@ -134,7 +134,7 @@ namespace stdext
 	}
 
 	template<class InputRange, class InputIterator>
-	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<InputRange>::position_type, InputIterator>>::type
+	std::pair<typename range_traits<InputRange>::position_type, InputIterator>
 		mismatch(const InputRange& range1, InputIterator first2)
 	{
 		auto std_r = std::mismatch(range_iterator<InputRange>(range1, range1.begin_pos()),
@@ -144,25 +144,25 @@ namespace stdext
 	}
 
 	template <class InputRange, class InputIterator, class BinaryPredicate>
-	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<InputRange>::position_type, InputIterator>>::type
+	std::pair<typename range_traits<InputRange>::position_type, InputIterator>
 		mismatch(const InputRange& range1, InputIterator first2, BinaryPredicate pred)
 	{
 		auto std_r = std::mismatch(range_iterator<InputRange>(range1, range1.begin_pos()),
 								   range_iterator<InputRange>(range1, range1.end_pos()),
 								   first2, pred);
-		return make_pair(std_r.first.pos(), std_r.second);
+		return std::make_pair(std_r.first.pos(), std_r.second);
 	}
 
 	template<class InputRange1, class InputRange2>
-	typename std::enable_if<is_range<InputRange2>::value, std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>>::type
-		mismatch(const InputRange1& range1, const InputRange2& range2)
+	std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>
+		mismatch_ranges(const InputRange1& range1, const InputRange2& range2)
 	{
-		return mismatch(range1, range2, [](typename stdext::range_traits<InputRange1>::reference a, typename stdext::range_traits<InputRange2>::reference b) { return a == b; });
+		return mismatch_ranges(range1, range2, [](typename stdext::range_traits<InputRange1>::reference a, typename stdext::range_traits<InputRange2>::reference b) { return a == b; });
 	}
 
 	template<class InputRange1, class InputRange2, class BinaryPredicate>
-	typename std::enable_if<is_range<InputRange2>::value, std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>>::type
-		mismatch(const InputRange1& range1, const InputRange2& range2, BinaryPredicate pred)
+	std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>
+		mismatch_ranges(const InputRange1& range1, const InputRange2& range2, BinaryPredicate pred)
 	{
 		auto p1 = range1.begin_pos(), p1_last = range1.end_pos();
 		auto p2 = range2.begin_pos(), p2_last = range2.end_pos();
@@ -171,7 +171,7 @@ namespace stdext
 			if (!pred(range1.at_pos(p1), range2.at_pos(p2)))
 				break;
 		}
-		return make_pair(p1, p2);
+		return std::make_pair(p1, p2);
 	}
 
 	template<class InputRange1, class InputIterator2>

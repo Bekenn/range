@@ -46,17 +46,17 @@ namespace stdext
 	std::size_t count_if(const InputRange& range, Predicate pred);
 
 	template<class InputRange, class InputIterator>
-	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<InputRange>::position_type, InputIterator>>::type
+	std::pair<typename range_traits<InputRange>::position_type, InputIterator>
 		mismatch(const InputRange& range1, InputIterator first2);
 	template <class InputRange, class InputIterator, class BinaryPredicate>
-	typename std::enable_if<!is_range<InputIterator>::value, std::pair<typename range_traits<InputRange>::position_type, InputIterator>>::type
+	std::pair<typename range_traits<InputRange>::position_type, InputIterator>
 		mismatch(const InputRange& range1, InputIterator first2, BinaryPredicate pred);
 	template<class InputRange1, class InputRange2>
-	typename std::enable_if<is_range<InputRange2>::value, std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>>::type
-		mismatch(const InputRange1& range1, const InputRange2& range2);
+	std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>
+		mismatch_ranges(const InputRange1& range1, const InputRange2& range2);
 	template<class InputRange1, class InputRange2, class BinaryPredicate>
-	typename std::enable_if<is_range<InputRange2>::value, std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>>::type
-		mismatch(const InputRange1& range1, const InputRange2& range2, BinaryPredicate pred);
+	std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>
+		mismatch_ranges(const InputRange1& range1, const InputRange2& range2, BinaryPredicate pred);
 
 	template<class InputRange1, class InputIterator2>
 	typename std::enable_if<!is_range<InputIterator2>::value, bool>::type
