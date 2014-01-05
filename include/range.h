@@ -200,7 +200,7 @@ namespace stdext
 		typedef typename Range::range_category  range_category;
 	};
 
-	// basic range, for easier range definitions
+	// basic range typedefs, for easier range definitions
 	template <class Category, class T, class Position, class Distance, class Reference>
 	struct range
 	{
