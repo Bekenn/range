@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 
-using namespace stdext::range;
+using namespace stdext;
 using namespace std;
 
 int main()
