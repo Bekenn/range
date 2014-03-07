@@ -25,7 +25,7 @@
 // p == q:
 //    If p and q are positions referencing elements of the same sequence, then p == q iff p and q
 //    reference the same element.  If p and q are positions referencing elements of different
-//    sequences, then p == q has noinherent meaning.
+//    sequences, then p == q has no inherent meaning.
 // p != q:
 //    !(p == q)
 
