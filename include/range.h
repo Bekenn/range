@@ -310,7 +310,7 @@ namespace stdext
 			typedef typename range_traits<iterator_range_base>::difference_type difference_type;
 
 			using iterator_range_base<Range, Iterator, Category, input_range_tag>::end_pos;
-			void            end_pos(position_type p) noexcept{ this->self().last() = std::move(p); }
+			void            end_pos(position_type p) noexcept{ this->self().last = std::move(p); }
 			difference_type distance_pos(position_type p1, position_type p2) const noexcept{ return std::distance(p1, p2); }
 		};
 

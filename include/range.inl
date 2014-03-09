@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 namespace stdext
 {
 	// make_range
@@ -57,7 +59,7 @@ namespace stdext
 	{
 		static_assert(is_bidirectional_range<BidirectionalRange>::value, "stdext::drop_last(BidirectionalRange&, difference_type): argument is not a bidirectional range");
 		auto p = r.end_pos();
-		advance(r, p, -n);
+		advance_pos(r, p, -n);
 		r.end_pos(p);
 	}
 
@@ -66,7 +68,7 @@ namespace stdext
 		template <class Range>
 		typename range_traits<Range>::position_type& advance_pos_neg(const Range& r, typename range_traits<Range>::position_type& p, typename range_traits<Range>::difference_type n, std::false_type /* is_bidirectional_range */)
 		{
-			// throw something
+			throw ::std::domain_error("can't advance position by negative value");
 		}
 
 		template <class Range>
@@ -74,16 +76,20 @@ namespace stdext
 		{
 			while (n-- > 0)
 				r.decrement_pos(p);
+
+			return p;
 		}
 
 		template <class Range>
 		typename range_traits<Range>::position_type& advance_pos(const Range& r, typename range_traits<Range>::position_type& p, typename range_traits<Range>::difference_type n, std::false_type /* is_random_access_range */)
 		{
 			if (n < 0)
-				return advance_pos_neg(r, p, -n, is_bidirectional_range<Range>::value);
+				return advance_pos_neg(r, p, -n, is_bidirectional_range<Range>());
 
 			while (n-- > 0)
 				r.increment_pos(p);
+
+			return p;
 		}
 
 		template <class Range>
@@ -102,7 +108,7 @@ namespace stdext
 	template <class ForwardRange>
 	typename range_traits<ForwardRange>::difference_type length(const ForwardRange& r)
 	{
-		return r.distance(r.begin_pos(), r.end_pos());
+		return r.distance_pos(r.begin_pos(), r.end_pos());
 	}
 
 	// iterator_range
