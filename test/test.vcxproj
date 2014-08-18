@@ -85,6 +85,9 @@
     <ClCompile Include="src\adapter.cpp" />
     <ClCompile Include="src\range.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\fixture.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

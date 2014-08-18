@@ -73,7 +73,7 @@
 #include <utility>
 
 #ifdef _MSC_VER
-#if _MSC_FULL_VER < 180021114
+#if _MSC_VER < 1900
 #define noexcept throw()
 #endif
 #endif
@@ -285,7 +285,6 @@ namespace stdext
 		struct iterator_range_base<Range, Iterator, Category, input_range_tag>
 			: range<Category, typename std::iterator_traits<Iterator>::value_type, Iterator, typename std::iterator_traits<Iterator>::difference_type, typename std::iterator_traits<Iterator>::reference>
 		{
-			// Clang needs these, but Visual Studio is fine without them.
 			typedef typename range_traits<iterator_range_base>::position_type position_type;
 			typedef typename range_traits<iterator_range_base>::reference reference;
 

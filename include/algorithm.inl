@@ -157,7 +157,7 @@ namespace stdext
 	std::pair<typename range_traits<InputRange1>::position_type, typename range_traits<InputRange2>::position_type>
 		mismatch_ranges(const InputRange1& range1, const InputRange2& range2)
 	{
-		return mismatch_ranges(range1, range2, [](typename stdext::range_traits<InputRange1>::reference a, typename stdext::range_traits<InputRange2>::reference b) { return a == b; });
+		return mismatch_ranges(range1, range2, ::std::equal_to<>());
 	}
 
 	template<class InputRange1, class InputRange2, class BinaryPredicate>
@@ -196,14 +196,14 @@ namespace stdext
 	typename std::enable_if<is_range<InputRange2>::value, bool>::type
 		equal(const InputRange1& range1, const InputRange2& range2)
 	{
-		return equal(range1, range2, [](typename range_traits<InputRange1>::reference a, typename range_traits<InputRange2>::reference b) { return a == b; });
+		return equal(range1, range2, ::std::equal_to<>());
 	}
 
 	template<class InputRange1, class InputRange2, class BinaryPredicate>
 	typename std::enable_if<is_range<InputRange2>::value, bool>::type
 		equal(const InputRange1& range1, const InputRange2& range2, BinaryPredicate pred)
 	{
-		auto positions = mismatch(range1, range2, pred);
+		auto positions = mismatch_ranges(range1, range2, pred);
 		return positions.first == range1.end_pos()
 			&& positions.second == range2.end_pos();
 	}
@@ -230,7 +230,7 @@ namespace stdext
 	typename std::enable_if<is_range<ForwardRange2>::value, bool>::type
 		is_permutation(const ForwardRange1& range1, const ForwardRange2& range2)
 	{
-		return is_permutation(range1, range2, [](typename range_traits<ForwardRange1>::reference a, typename range_traits<ForwardRange2>::reference b) { return a == b; });
+		return is_permutation(range1, range2, ::std::equal_to<>());
 	}
 
 	template<class ForwardRange1, class ForwardRange2, class BinaryPredicate>

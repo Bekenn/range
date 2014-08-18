@@ -1,3 +1,5 @@
+#include "fixture.h"
+
 #include <range.h>
 
 #define BOOST_TEST_MAIN
@@ -12,99 +14,11 @@
 using namespace std;
 using namespace stdext;
 
-template <typename T>
-class memory_input_iterator : public iterator<input_iterator_tag, T, ptrdiff_t, T*, T>
-{
-public:
-	typedef typename memory_input_iterator::value_type value_type;
-	typedef typename memory_input_iterator::pointer pointer;
-	typedef typename memory_input_iterator::reference reference;
-
-public:
-	memory_input_iterator() : p(nullptr) { }
-	memory_input_iterator(pointer p, size_t length) : p(p), length(length)
-	{
-		if (length == 0)
-			p = nullptr;
-		else
-			v = *p;
-	}
-
-public:
-	reference operator * () const { return v; }
-	memory_input_iterator& operator ++ ()
-	{
-		++p;
-		if (--length == 0)
-			p = nullptr;
-		else
-			v = *p;
-		return *this;
-	}
-	memory_input_iterator operator ++ (int)
-	{
-		auto i = *this;
-		++*this;
-		return i;
-	}
-
-private:
-	friend bool operator == (const memory_input_iterator& a, const memory_input_iterator& b) { return a.p == b.p && a.length == b.length; }
-	pointer p;
-	size_t length;
-	value_type v;
-};
-
-template <typename T>
-bool operator != (const memory_input_iterator<T>& a, const memory_input_iterator<T>& b) { return !(a == b); }
-
-struct input_iterator_range_fixture
-{
-	vector<int> numbers;
-
-	input_iterator_range_fixture() : numbers(10)
-	{
-		iota(numbers.begin(), numbers.end(), 0);
-	}
-};
-
-struct forward_iterator_range_fixture
-{
-	forward_list<int> numbers;
-
-	forward_iterator_range_fixture() : numbers(10)
-	{
-		iota(numbers.begin(), numbers.end(), 0);
-	}
-};
-
-struct bidirectional_iterator_range_fixture
-{
-	list<int> numbers;
-
-	bidirectional_iterator_range_fixture() : numbers(10)
-	{
-		iota(numbers.begin(), numbers.end(), 0);
-	}
-};
-
-struct random_access_iterator_range_fixture
-{
-	vector<int> numbers;
-
-	random_access_iterator_range_fixture() : numbers(10)
-	{
-		iota(numbers.begin(), numbers.end(), 0);
-	}
-};
-
 BOOST_FIXTURE_TEST_CASE(test_input_iterator_range, input_iterator_range_fixture)
 {
 	// memory_input_iterator behaves like an input iterator in all ways except
 	// that it is possible to re-traverse a range.  This is an important trait
 	// for testing.
-	auto first = memory_input_iterator<int>(numbers.data(), numbers.size());
-	auto last = memory_input_iterator<int>();
 	auto range = make_range(first, last);
 
 	BOOST_CHECK(range.begin_pos() == first);
@@ -135,10 +49,10 @@ BOOST_FIXTURE_TEST_CASE(test_input_iterator_range, input_iterator_range_fixture)
 
 BOOST_FIXTURE_TEST_CASE(test_forward_iterator_range, forward_iterator_range_fixture)
 {
-	auto range = make_range(numbers);
-	BOOST_CHECK(range.begin_pos() == numbers.begin());
-	BOOST_CHECK(range.end_pos() == numbers.end());
-	BOOST_CHECK_EQUAL(&front(range), &numbers.front());
+	auto range = make_range(first, last);
+	BOOST_CHECK(range.begin_pos() == first);
+	BOOST_CHECK(range.end_pos() == last);
+	BOOST_CHECK_EQUAL(&front(range), &*first);
 
 	auto p = range.begin_pos();
 	BOOST_CHECK_EQUAL(range.at_pos(p), 0);
@@ -153,7 +67,7 @@ BOOST_FIXTURE_TEST_CASE(test_forward_iterator_range, forward_iterator_range_fixt
 	BOOST_CHECK_EQUAL(length(range), 6);
 	BOOST_CHECK_EQUAL(front(range), 4);
 
-	range = make_range(numbers);
+	range = make_range(first, last);
 	p = range.begin_pos();
 	auto q = p;
 	for (auto n = 0; n < 5; ++n)
@@ -167,12 +81,14 @@ BOOST_FIXTURE_TEST_CASE(test_forward_iterator_range, forward_iterator_range_fixt
 
 BOOST_FIXTURE_TEST_CASE(test_bidirectional_iterator_range, bidirectional_iterator_range_fixture)
 {
-	auto range = make_range(numbers);
-	BOOST_CHECK(range.begin_pos() == numbers.begin());
-	BOOST_CHECK(range.end_pos() == numbers.end());
-	BOOST_CHECK_EQUAL(&front(range), &numbers.front());
-	BOOST_CHECK_EQUAL(&back(range), &numbers.back());
-	BOOST_CHECK_EQUAL(length(range), numbers.size());
+	auto range = make_range(first, last);
+	auto range_back = last;
+	--range_back;
+	BOOST_CHECK(range.begin_pos() == first);
+	BOOST_CHECK(range.end_pos() == last);
+	BOOST_CHECK_EQUAL(&front(range), &*first);
+	BOOST_CHECK_EQUAL(&back(range), &*range_back);
+	BOOST_CHECK_EQUAL(length(range), distance(first, last));
 
 	auto p = range.begin_pos();
 	BOOST_CHECK_EQUAL(range.at_pos(p), 0);
@@ -198,7 +114,7 @@ BOOST_FIXTURE_TEST_CASE(test_bidirectional_iterator_range, bidirectional_iterato
 	BOOST_CHECK_EQUAL(front(range), 4);
 	BOOST_CHECK_EQUAL(back(range), 5);
 
-	range = make_range(numbers);
+	range = make_range(first, last);
 	p = range.begin_pos();
 	auto q = p;
 	for (auto n = 0; n < 5; ++n)
@@ -217,12 +133,12 @@ BOOST_FIXTURE_TEST_CASE(test_bidirectional_iterator_range, bidirectional_iterato
 
 BOOST_FIXTURE_TEST_CASE(test_random_access_iterator_range, random_access_iterator_range_fixture)
 {
-	auto range = make_range(numbers);
-	BOOST_CHECK(range.begin_pos() == numbers.begin());
-	BOOST_CHECK(range.end_pos() == numbers.end());
-	BOOST_CHECK_EQUAL(&front(range), &numbers.front());
-	BOOST_CHECK_EQUAL(&back(range), &numbers.back());
-	BOOST_CHECK_EQUAL(length(range), numbers.size());
+	auto range = make_range(first, last);
+	BOOST_CHECK(range.begin_pos() == first);
+	BOOST_CHECK(range.end_pos() == last);
+	BOOST_CHECK_EQUAL(&front(range), &*first);
+	BOOST_CHECK_EQUAL(&back(range), &*(last - 1));
+	BOOST_CHECK_EQUAL(length(range), distance(first, last));
 
 	auto p = range.begin_pos();
 	BOOST_CHECK_EQUAL(range.at_pos(p), 0);
@@ -248,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE(test_random_access_iterator_range, random_access_iterato
 	BOOST_CHECK_EQUAL(front(range), 4);
 	BOOST_CHECK_EQUAL(back(range), 5);
 
-	range = make_range(numbers);
+	range = make_range(first, last);
 	p = range.begin_pos();
 	auto q = p;
 	range.advance_pos(p, 5);
