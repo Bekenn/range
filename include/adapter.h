@@ -229,6 +229,7 @@ namespace stdext
 			: concatenated_range_base<Range, InputRange1, InputRange2, Category, input_range_tag>
 		{
 			typedef typename range_traits<concatenated_range_base>::position_type position_type;
+			typedef typename range_traits<concatenated_range_base>::difference_type difference_type;
 
 			using concatenated_range_base<Range, InputRange1, InputRange2, Category, input_range_tag>::end_pos;
 			void end_pos(const position_type& pos)   { this->self().last = pos; }
@@ -384,8 +385,8 @@ namespace stdext
 			position_type& decrement_pos(position_type& pos)
 			{
 				do {
-					this->self().range.decrement_pos(p);
-				} while (p != this->self().range.begin_pos() && !this->self().pred(this->self().range.at_pos(p)));
+					this->self().range.decrement_pos(pos);
+				} while (pos != this->self().range.begin_pos() && !this->self().pred(this->self().range.at_pos(pos)));
 			}
 		};
 	}
@@ -626,6 +627,9 @@ namespace stdext
 		struct reversed_range_base<Range, BidirectionalRange, Category, random_access_range_tag>
 			: reversed_range_base<Range, BidirectionalRange, Category, bidirectional_range_tag>
 		{
+			typedef typename range_traits<reversed_range_base>::position_type position_type;
+			typedef typename range_traits<reversed_range_base>::reference reference;
+
 			position_type  begin_pos() const                     { return this->self().range.end_pos(); }
 			void           begin_pos(position_type p)            { this->self().range.end_pos(::std::move(p)); }
 			position_type  end_pos() const			             { return this->self().range.begin_pos(); }
@@ -667,6 +671,10 @@ namespace stdext
 				typename range_traits<ForwardRange>::difference_type,
 				typename range_traits<ForwardRange>::reference>
 		{
+			typedef typename range_traits<rotated_range_base>::position_type position_type;
+			typedef typename range_traits<rotated_range_base>::reference reference;
+			typedef typename range_traits<rotated_range_base>::difference_type difference_type;
+
 			position_type  begin_pos() const                     { return self().first; }
 			void           begin_pos(position_type p)            { self().first = ::std::move(p); }
 			position_type  end_pos() const			             { return self().last; }
@@ -706,9 +714,9 @@ namespace stdext
 
 			position_type& decrement_pos(position_type& p) const
 			{
-				if (p = this->self().range.end_pos())
+				if (p == this->self().range.end_pos())
 					p = this->self().first;
-				if (p = this->self().range.begin_pos())
+				if (p == this->self().range.begin_pos())
 					p = this->self().range.end_pos();
 				this->self().range.decrement_pos(p);
 				return p;
@@ -783,6 +791,10 @@ namespace stdext
 				typename range_traits<ForwardRange>::difference_type,
 				typename range_traits<ForwardRange>::reference>
 		{
+			typedef typename range_traits<partitioned_range_base>::position_type position_type;
+			typedef typename range_traits<partitioned_range_base>::reference reference;
+			typedef typename range_traits<partitioned_range_base>::difference_type difference_type;
+
 			position_type  begin_pos() const                     { return self().first; }
 			void           begin_pos(position_type p)            { self().first = ::std::move(p); }
 			position_type  end_pos() const			             { return self().last; }
