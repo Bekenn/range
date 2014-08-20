@@ -113,19 +113,11 @@ namespace stdext
 
 	// iterator_range
 	template <class C>
-	iterator_range<typename detail::iterator_type<C>::type> make_range(C& c)
+	iterator_range<typename detail::iterator_type<typename std::remove_reference<C>::type>::type> make_range(C&& c)
 	{
 		using std::begin;
 		using std::end;
-		return make_range(begin(c), end(c));
-	}
-
-	template <class C>
-	iterator_range<typename detail::iterator_type<const C>::type> make_range(const C& c)
-	{
-		using std::begin;
-		using std::end;
-		return make_range(begin(c), end(c));
+		return make_range(begin(std::forward<C>(c)), end(std::forward<C>(c)));
 	}
 
 	template <class Range>

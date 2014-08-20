@@ -81,7 +81,7 @@
 #define Range_DeclareHasMember(name) \
 namespace has_ ## name ## _detail { \
 	template <typename T> char has_ ## name ## _helper(...); \
-	template <typename T> char(&has_ ## name ## _helper(decltype(T::name) T::*))[2]; \
+	template <typename T> char(&has_ ## name ## _helper(typename std::remove_reference<decltype(T::name)>::type T::*))[2]; \
 } \
 	template <typename T> \
 struct has_ ## name : std::conditional<sizeof(has_ ## name ## _detail::has_ ## name ## _helper<T>(nullptr)) - 1, std::true_type, std::false_type>::type{}
@@ -89,7 +89,7 @@ struct has_ ## name : std::conditional<sizeof(has_ ## name ## _detail::has_ ## n
 #define Range_DeclareHasMethod(name) \
 namespace has_ ## name ## _detail { \
 	template <typename T, typename... Args> char has_ ## name ## _helper(...); \
-	template <typename T, typename... Args> char(&has_ ## name ## _helper(decltype(std::declval<T>().name(std::declval<Args>()...))*))[2]; \
+	template <typename T, typename... Args> char(&has_ ## name ## _helper(typename std::remove_reference<decltype(std::declval<T>().name(std::declval<Args>()...))>::type*))[2]; \
 } \
 	template <typename T, typename... Args> \
 struct has_ ## name : std::conditional<sizeof(has_ ## name ## _detail::has_ ## name ## _helper<T, Args...>(nullptr)) - 1, std::true_type, std::false_type>::type{}
@@ -176,10 +176,8 @@ namespace stdext
 	}
 	template <class Iterator>
 	iterator_range<Iterator> make_range(Iterator first, Iterator last);
-	template <class C>
-	iterator_range<typename detail::iterator_type<C>::type> make_range(C& c);
-	template <class C>
-	iterator_range<typename detail::iterator_type<const C>::type> make_range(const C& c);
+	template <class C&&>
+	iterator_range<typename detail::iterator_type<typename std::remove_reference<C>::type>::type> make_range(C&& c);
 
 	template <class Range>
 	Range range_before(Range range, typename range_traits<Range>::position_type p);
